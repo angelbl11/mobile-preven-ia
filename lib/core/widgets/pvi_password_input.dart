@@ -9,6 +9,8 @@ class PviPasswordInput extends StatefulWidget {
   final String? label;
   final Color fillColor;
   final Widget? prefixIcon;
+  final TextEditingController? controller;
+  final String? Function(String?)? validator;
 
   const PviPasswordInput({
     super.key,
@@ -18,13 +20,15 @@ class PviPasswordInput extends StatefulWidget {
     this.label,
     this.fillColor = const Color(0xFFF5F5F5),
     this.prefixIcon,
+    this.controller,
+    this.validator,
   });
 
   @override
-  _PviPasswordInputState createState() => _PviPasswordInputState();
+  PviPasswordInputState createState() => PviPasswordInputState();
 }
 
-class _PviPasswordInputState extends State<PviPasswordInput> {
+class PviPasswordInputState extends State<PviPasswordInput> {
   bool _obscureText = true;
 
   void _toggleVisibility() {
@@ -34,6 +38,8 @@ class _PviPasswordInputState extends State<PviPasswordInput> {
   @override
   Widget build(BuildContext context) {
     return PviTextInput(
+      controller: widget.controller,
+      validator: widget.validator,
       keyboardType: TextInputType.visiblePassword,
       onChanged: widget.onChanged,
       maxLength: widget.maxLength,
