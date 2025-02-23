@@ -13,6 +13,8 @@ class PviTextInput extends StatelessWidget {
   final bool obscureText;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final TextEditingController? controller;
+  final String? Function(String?)? validator;
 
   const PviTextInput({
     super.key,
@@ -25,16 +27,21 @@ class PviTextInput extends StatelessWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.obscureText = false,
+    this.controller,
+    this.validator,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      controller: controller,
+      validator: validator,
       onChanged: onChanged,
       keyboardType: keyboardType,
       maxLength: maxLength,
       obscureText: obscureText,
       decoration: InputDecoration(
+        counterText: '',
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
         filled: true,

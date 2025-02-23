@@ -7,7 +7,7 @@ DART?=dart
 
 run:
 	@echo "Running the application"
-	$(FLUTTER) run
+	$(FLUTTER) run --dart-define-from-file=$(ENV_DIR)/env.json
 
 
 #  Generate the auto-generated files for the project using the build_runner
@@ -17,13 +17,11 @@ gen-code:
 
 # Define variables and ensure they are set only for the generate target
 gen-api: openapi-generator-cli.jar
-	@echo "Replacing string in file"
-	@sh ../infra-gateway-api/file_type_replacer.sh
 	@echo "Generating API client"
-	@java -jar openapi-generator-cli.jar generate -i ../infra-gateway-api/api_gateway_sk.yml -g dart-dio -o api/sk-api --additional-properties=pubName=sk_api
+	@java -jar openapi-generator-cli.jar generate -i ./swagger.yml -g dart-dio -o api/ --additional-properties=pubName=pvi_api
 	@echo "API client generated"
 	@echo "Generating Autogeneraated Files"
-	cd api/sk-api && $(DART) run build_runner build --delete-conflicting-outputs
+	cd api/ && $(DART) run build_runner build --delete-conflicting-outputs
 
 
 # Target to download the OpenAPI Generator CLI JAR file for Mac

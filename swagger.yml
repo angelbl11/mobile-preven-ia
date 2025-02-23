@@ -1,0 +1,77 @@
+swagger: "2.0"
+info:
+  title: Preven-IA-Backend
+  description: Description
+  version: 1.0.0
+host: backend-preven-ia-production.up.railway.app/
+basePath: v1/
+schemes:
+  - https
+paths:
+  /file/extract-content:
+    post:
+      description: ""
+      parameters:
+        - name: body
+          in: body
+          schema:
+            type: object
+            properties:
+              patientID:
+                example: any
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+  /file/{id}:
+    get:
+      description: ""
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+  /authentication/register:
+    post:
+      description: ""
+      parameters:
+        - name: body
+          in: body
+          schema:
+            type: object
+            properties:
+              phoneNumber:
+                example: any
+              password:
+                example: any
+              personalInfo:
+                example: any
+      responses:
+        default:
+          description: ""
+  /authentication/login:
+    post:
+      description: ""
+      parameters:
+        - name: body
+          in: body
+          schema:
+            type: object
+            properties:
+              phoneNumber:
+                example: any
+                type: string
+              password:
+                example: any
+                type: string
+      responses:
+        default:
+          description: ""
