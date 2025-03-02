@@ -150,6 +150,7 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
               status: MessageStatus.success,
               context: context,
               message: 'Perfil completado exitosamente');
+          Navigator.pushNamed(context, '/home');
         },
       );
     }

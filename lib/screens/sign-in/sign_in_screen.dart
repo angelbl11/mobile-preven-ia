@@ -2,9 +2,7 @@ import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:mobile_preven_ia_app/classes/message_status.dart';
 import 'package:mobile_preven_ia_app/firebase/auth/providers/fire_auth_controller.dart';
-import 'package:mobile_preven_ia_app/functions/show_toast.dart';
 import 'package:mobile_preven_ia_app/functions/status_handler_function.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
@@ -79,10 +77,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           if (step == 'health-info') {
             Navigator.pushNamed(context, '/health-info');
           } else {
-            showToast(
-                status: MessageStatus.success,
-                context: context,
-                message: 'Inicio de sesión exitoso');
+            Navigator.pushNamed(context, '/home');
           }
         },
       );
@@ -102,6 +97,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 // Do not autovalidate; errors only show on submit.
                 autovalidateMode: AutovalidateMode.disabled,
                 child: Column(
+                  spacing: 22,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Align(
@@ -109,19 +105,17 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       child: Image.asset(
                         'assets/images/logo.png',
                         width: 350,
-                        height: 80,
+                        height: 90,
                       ),
                     ),
                     PviText(
                       text: 'Bienvenido de nuevo',
                       style: AppFonts.headline1,
                     ),
-                    const SizedBox(height: 22),
                     PviText(
                       text: 'Inicia sesión para continuar',
                       style: AppFonts.subtitle2,
                     ),
-                    const SizedBox(height: 22),
                     PviTextInput(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -143,7 +137,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 22),
                     PviPasswordInput(
                       controller: _passwordController,
                       prefixIcon: const Icon(
@@ -168,23 +161,20 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                         text: '¿Olvidaste tu contraseña?',
                       ),
                     ),
-                    const SizedBox(height: 32),
                     SizedBox(
                       width: double.infinity,
                       height: 56,
                       child: PviButton(
-                        // Enable the button only when the form is ready based on our simple validity.
                         onPressed:
                             _isFormValid ? () async => await _submit() : null,
                         child: PviText(
-                          text: 'Continuar',
+                          text: 'Iniciar sesión',
                           style: AppFonts.button1.copyWith(
                             color: Colors.white,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 22),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
