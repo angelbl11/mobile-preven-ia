@@ -14,7 +14,7 @@ void showToast({
 }) {
   toastification.show(
     context: context,
-    style: ToastificationStyle.minimal,
+    style: ToastificationStyle.fillColored,
     autoCloseDuration: const Duration(seconds: 5),
     type: status.type,
     alignment: Alignment.bottomLeft,

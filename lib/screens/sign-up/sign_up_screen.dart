@@ -112,6 +112,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   spacing: 22,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 350,
+                        height: 90,
+                      ),
+                    ),
                     PviText(text: 'Crea tu cuenta', style: AppFonts.headline1),
                     PviText(
                         text: 'Ingresa tus datos para registrarte',
