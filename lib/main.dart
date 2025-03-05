@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/screens/health-info/health_info_screen.dart';
-import 'package:mobile_preven_ia_app/screens/home/home_screen.dart';
+import 'package:mobile_preven_ia_app/screens/navigation-handler/navigation_handler_screen.dart';
 import 'package:mobile_preven_ia_app/screens/sign-in/sign_in_screen.dart';
 import 'package:mobile_preven_ia_app/screens/sign-up/sign_up_screen.dart';
+import 'package:mobile_preven_ia_app/screens/upload-file/upload_file_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +29,8 @@ class MainApp extends StatelessWidget {
           '/': (_) => const SignInScreen(),
           '/sign-up': (_) => const SignUpScreen(),
           '/health-info': (_) => const HealthInfoScreen(),
-          '/home': (_) => const HomeScreen(),
+          '/home': (_) => NavigationHandlerScreen(),
+          '/upload-file': (_) => const UploadFileScreen(),
         },
       ),
     );
