@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -177,33 +178,39 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         return null;
                       },
                     ),
-                    Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            PviText(
-                                text: 'Al registrarte aceptas nuestros',
-                                style: AppFonts.body1),
-                            PviTextButton(
-                                onPressed: () => '',
-                                text: 'Términos y condiciones',
-                                textStyle:
-                                    AppFonts.button1.copyWith(fontSize: 14)),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            PviText(text: 'y nuestra', style: AppFonts.body1),
-                            PviTextButton(
-                                onPressed: () => '',
-                                text: 'Política de privacidad',
-                                textStyle:
-                                    AppFonts.button1.copyWith(fontSize: 14)),
-                          ],
-                        ),
-                      ],
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        style: AppFonts.body1, // Estilo base para el texto
+                        children: [
+                          const TextSpan(
+                            text: 'Al registrarte aceptas nuestros ',
+                          ),
+                          TextSpan(
+                            text: 'Términos y condiciones',
+                            style: AppFonts.button1.copyWith(
+                                fontSize: 14, color: AppColors.primary),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                // Acción a ejecutar al pulsar "Términos y condiciones"
+                                print('Términos y condiciones pulsados');
+                              },
+                          ),
+                          const TextSpan(
+                            text: ' y nuestra ',
+                          ),
+                          TextSpan(
+                            text: 'Política de privacidad',
+                            style: AppFonts.button1.copyWith(
+                                fontSize: 14, color: AppColors.primary),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                // Acción a ejecutar al pulsar "Política de privacidad"
+                                print('Política de privacidad pulsada');
+                              },
+                          ),
+                        ],
+                      ),
                     ),
                     SizedBox(
                       width: double.infinity,

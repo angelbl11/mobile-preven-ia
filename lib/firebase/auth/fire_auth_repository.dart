@@ -1,11 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mobile_preven_ia_app/firebase/classes/session_info.dart';
+import 'package:uuid/uuid.dart';
 
 class FireAuthRepository {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
-  // Sign in function that returns a LoginResult containing the user and the STEP info.
+  // Sign in function that returns a SessionInfo containing the user and the STEP info.
   Future<SessionInfo?> signInWithEmailAndPassword({
     required String email,
     required String password,
@@ -39,12 +40,16 @@ class FireAuthRepository {
         email: email,
         password: password,
       );
+      const uuid = Uuid();
+      final newUuid = uuid.v4();
 
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userCredential.user!.uid)
           .set({
         'next_step': 'HEALTH_INFO',
+        'user_id': newUuid,
+        'created_at': FieldValue.serverTimestamp(),
       });
 
       return userCredential.user;

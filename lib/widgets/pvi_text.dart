@@ -10,6 +10,11 @@ class PviText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(text, style: style, textAlign: textAlign);
+    return Text(
+      text,
+      style: style,
+      textAlign: textAlign,
+      textScaler: TextScaler.noScaling,
+    );
   }
 }
