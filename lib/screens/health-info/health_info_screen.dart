@@ -207,8 +207,6 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 22),
-                    // Maternal Last Name Input
                     PviTextInput(
                       controller: _maternalLastNameController,
                       keyboardType: TextInputType.name,

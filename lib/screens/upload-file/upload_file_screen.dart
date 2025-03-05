@@ -1,11 +1,18 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:mobile_preven_ia_app/screens/manual-parameters/manual_parameters_screen.dart';
+import 'package:mobile_preven_ia_app/screens/processing-file/processing_file_screen.dart';
+import 'package:mobile_preven_ia_app/widgets/pvi_text_button.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_button.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
+import 'package:material_dialogs/material_dialogs.dart';
 
 class UploadFileScreen extends StatefulWidget {
   const UploadFileScreen({super.key});
@@ -15,25 +22,93 @@ class UploadFileScreen extends StatefulWidget {
 }
 
 class _UploadFileScreenState extends State<UploadFileScreen> {
+  List<String> _missingParameters = [];
+
   Future<void> _pickAndExtractPdf() async {
-    // Let user pick a single PDF file.
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
     );
     if (result != null && result.files.single.path != null) {
       final File pdfFile = File(result.files.single.path!);
-      // Read the file as bytes.
       final List<int> bytes = pdfFile.readAsBytesSync();
-      // Load the PDF document.
       final PdfDocument document = PdfDocument(inputBytes: bytes);
-      // Extract text from the document.
       final String extractedText = PdfTextExtractor(document).extractText();
-      print("Extracted text: $extractedText");
-      // Dispose the document.
+      print("Texto extraído: $extractedText");
       document.dispose();
-    } else {
-      print("No file selected or file path is null.");
+
+      final String lowerText = extractedText.toLowerCase();
+
+      final List<String> requiredParameters = [
+        "ldl",
+        "triglicéridos",
+        "glucosa",
+        "hba1c",
+        "creatinina",
+        "presión arterial sistólica",
+        "presión arterial diastólica",
+      ];
+
+      final List<String> missing = requiredParameters
+          .where((param) => !lowerText.contains(param))
+          .toList();
+
+      setState(() {
+        _missingParameters = missing;
+      });
+
+      if (_missingParameters.isNotEmpty) {
+        Dialogs.materialDialog(
+          titleAlign: TextAlign.center,
+          msgAlign: TextAlign.center,
+          msgStyle: AppFonts.body1,
+          titleStyle: AppFonts.headline4,
+          context: context,
+          title: "Parámetros faltantes",
+          msg:
+              "El análisis clínico no contiene los parámetros necesarios para un diagnóstico preciso, quieres continuar con un diagnóstico general?",
+          actions: [
+            Column(
+              children: [
+                PviTextButton(
+                  text: "Ingresar manualmente",
+                  onPressed: () {
+                    PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+                      context,
+                      screen: const ManualParametersScreen(),
+                      withNavBar: false,
+                      pageTransitionAnimation: PageTransitionAnimation.fade,
+                      settings: RouteSettings(
+                        arguments: {
+                          'missingParameters': _missingParameters,
+                          'extractedText': extractedText,
+                        },
+                      ),
+                    );
+                  },
+                ),
+                PviTextButton(
+                  text: "Continuar",
+                  onPressed: () {
+                    PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+                      context,
+                      screen: const ProcessingFileScreen(),
+                      withNavBar: false,
+                      pageTransitionAnimation: PageTransitionAnimation.fade,
+                      settings: RouteSettings(
+                        arguments: {
+                          'extractedText': extractedText,
+                          'isUsingModel': false,
+                        },
+                      ),
+                    );
+                  },
+                )
+              ],
+            ),
+          ],
+        );
+      }
     }
   }
 
@@ -66,6 +141,7 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
                 const SizedBox(height: 32),
                 SizedBox(
                   width: double.infinity,
+                  height: 56,
                   child: PviButton(
                     onPressed: _pickAndExtractPdf,
                     child: PviText(
