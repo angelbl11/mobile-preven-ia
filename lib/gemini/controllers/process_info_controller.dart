@@ -42,7 +42,8 @@ class ProcessInfoController extends _$ProcessInfoController {
     return age;
   }
 
-  Future<String?> analyzeTextWithoutModel(String plainText) async {
+  Future<Map<String, dynamic>?> analyzeTextWithoutModel(
+      String plainText) async {
     final geminiController = ref.watch(geminiControllerProvider);
 
     // Primera etapa: extraer datos del texto.
@@ -54,7 +55,8 @@ class ProcessInfoController extends _$ProcessInfoController {
     );
 
     // Obtenemos el perfil del usuario.
-    final userProfile = ref.read(fireStorageUserControllerProvider).value;
+    final userProfile =
+        await ref.read(fireStorageUserControllerProvider.future);
 
     // Calculamos la edad a partir de la birthDate.
     int age = 0;
@@ -82,11 +84,13 @@ class ProcessInfoController extends _$ProcessInfoController {
     // Persistir el análisis en Firestore si se obtuvo resultado.
     final currentUser = ref.read(fireAuthControllerProvider).value?.user;
     if (analysisOutput != null && currentUser != null) {
-      await ref
+      // Aquí obtenemos el análisis persistido, que es un Map<String, dynamic>
+      final persistedAnalysis = await ref
           .read(fireStorageAnalysisControllerProvider.notifier)
           .createUserAnalysis(currentUser.uid, analysisOutput);
+      return persistedAnalysis;
     }
 
-    return analysisOutput;
+    return null;
   }
 }

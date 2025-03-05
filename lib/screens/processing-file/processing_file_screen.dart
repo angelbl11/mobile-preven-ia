@@ -51,6 +51,7 @@ class ProcessingFileScreen extends ConsumerWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 18, vertical: 32),
                 child: Column(
+                  spacing: 22,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Lottie.asset('assets/lotties/processing-file.json',
