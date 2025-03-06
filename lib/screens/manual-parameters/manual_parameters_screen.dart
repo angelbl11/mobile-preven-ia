@@ -91,8 +91,7 @@ class _ManualParametersScreenState extends State<ManualParametersScreen> {
       final formattedKey = formattedLabels[param] ?? param;
       parameterValues[formattedKey] = _controllers[param]?.text.trim() ?? "";
     }
-    print("Valores ingresados: $parameterValues");
-    print("Extracted text: $extractedText");
+
     PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
       context,
       screen: const ProcessingFileScreen(),

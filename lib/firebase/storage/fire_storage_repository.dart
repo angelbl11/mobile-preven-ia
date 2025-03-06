@@ -13,11 +13,9 @@ class FireStorageRepository {
         final userProfile = UserProfile.fromMap(data);
         return userProfile;
       } else {
-        print('User profile not found');
         return null;
       }
     } catch (e) {
-      print('Error getting user profile: $e');
       rethrow;
     }
   }
@@ -35,7 +33,6 @@ class FireStorageRepository {
   String sanitizeJson(String jsonStr) {
     String sanitized = jsonStr.replaceAll(RegExp(r'```'), '').trim();
     sanitized = extractValidJson(sanitized);
-    print('JSON extraído: "$sanitized"');
     return sanitized;
   }
 
@@ -65,27 +62,6 @@ class FireStorageRepository {
       final docSnapshot = await analysisRef.get();
       return docSnapshot.data() as Map<String, dynamic>;
     } catch (e) {
-      print('Error saving analysis: $e');
-      rethrow;
-    }
-  }
-
-  /// Obtiene el análisis más reciente del usuario.
-  Future<Map<String, dynamic>?> getLatestUserAnalysis(String uid) async {
-    try {
-      final querySnapshot = await _firestore
-          .collection('users')
-          .doc(uid)
-          .collection('analysis')
-          .orderBy('created_at', descending: true)
-          .limit(1)
-          .get();
-      if (querySnapshot.docs.isNotEmpty) {
-        return querySnapshot.docs.first.data();
-      }
-      return null;
-    } catch (e) {
-      print('Error getting latest analysis: $e');
       rethrow;
     }
   }

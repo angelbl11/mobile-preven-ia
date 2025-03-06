@@ -117,8 +117,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       alignment: Alignment.center,
                       child: Image.asset(
                         'assets/images/logo.png',
-                        width: 350,
-                        height: 90,
+                        width: 150,
+                        height: 150,
                       ),
                     ),
                     PviText(text: 'Crea tu cuenta', style: AppFonts.headline1),
@@ -193,7 +193,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
                                 // Acción a ejecutar al pulsar "Términos y condiciones"
-                                print('Términos y condiciones pulsados');
                               },
                           ),
                           const TextSpan(
@@ -206,7 +205,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
                                 // Acción a ejecutar al pulsar "Política de privacidad"
-                                print('Política de privacidad pulsada');
                               },
                           ),
                         ],

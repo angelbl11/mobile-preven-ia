@@ -1,4 +1,3 @@
-import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -104,8 +103,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       alignment: Alignment.center,
                       child: Image.asset(
                         'assets/images/logo.png',
-                        width: 350,
-                        height: 90,
+                        width: 150,
+                        height: 150,
                       ),
                     ),
                     PviText(

@@ -1,0 +1,8 @@
+Version: 1.0.0
+Build: 3
+
+Changes in this build:
+- App Icon Added
+- App Splash Added
+- Height and Weight Validation
+- Result from Gemini without custom model added
