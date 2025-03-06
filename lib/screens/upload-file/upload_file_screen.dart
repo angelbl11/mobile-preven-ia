@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
@@ -34,7 +34,6 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
       final List<int> bytes = pdfFile.readAsBytesSync();
       final PdfDocument document = PdfDocument(inputBytes: bytes);
       final String extractedText = PdfTextExtractor(document).extractText();
-      print("Texto extraído: $extractedText");
       document.dispose();
 
       final String lowerText = extractedText.toLowerCase();

@@ -30,3 +30,7 @@ build-aab:
 gen-code:
 	@echo "Generating codes"
 	$(DART) run build_runner build --delete-conflicting-outputs
+
+update-version:
+	@echo "Updating version"
+	sh update_version.sh

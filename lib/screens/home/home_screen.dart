@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_user_controller.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/screens/home/widgets/clinical_results.dart';
+import 'package:mobile_preven_ia_app/widgets/pvi_loader.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -60,7 +61,7 @@ class HomeScreen extends ConsumerWidget {
         return const SizedBox.shrink();
       },
       loading: () {
-        return const SizedBox.shrink();
+        return const PviLoader();
       },
     );
   }

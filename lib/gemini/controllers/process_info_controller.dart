@@ -42,6 +42,13 @@ class ProcessInfoController extends _$ProcessInfoController {
     return age;
   }
 
+  String parseGender(String gender) {
+    if (gender == 'M') {
+      return 'Masculino';
+    }
+    return 'Femenino';
+  }
+
   Future<Map<String, dynamic>?> analyzeTextWithoutModel(
       String plainText) async {
     final geminiController = ref.watch(geminiControllerProvider);
@@ -56,9 +63,8 @@ class ProcessInfoController extends _$ProcessInfoController {
 
     // Obtenemos el perfil del usuario.
     final userProfile =
-        await ref.read(fireStorageUserControllerProvider.future);
+        await ref.watch(fireStorageUserControllerProvider.future);
 
-    // Calculamos la edad a partir de la birthDate.
     int age = 0;
     final birthDate = _parseBirthDate(userProfile?.birthDate);
     if (birthDate != null) {
@@ -67,8 +73,8 @@ class ProcessInfoController extends _$ProcessInfoController {
 
     // Reemplazamos los placeholders en el prompt con los valores reales.
     final modifiedAnalyzePrompt = analyzeWithoutModelPrompt
-        .replaceAll('valor_de_IMC', userProfile?.bmi.toString() ?? '')
-        .replaceAll('valor_de_sexo', userProfile?.gender ?? '')
+        .replaceAll('valor_de_IMC', userProfile?.bmi.toString() ?? '0')
+        .replaceAll('valor_de_sexo', parseGender(userProfile?.gender ?? 'M'))
         .replaceAll('valor_de_edad', age.toString());
 
     // Segunda etapa: análisis del texto extraído con los valores actualizados.

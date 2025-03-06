@@ -273,9 +273,16 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
                               size: 18,
                             ),
                             validator: (value) {
-                              final weight = double.tryParse(value ?? '');
-                              if (weight == null || weight <= 0) {
+                              if (value == null || value.trim().isEmpty) {
                                 return 'Ingresa un peso válido';
+                              }
+                              final weight =
+                                  double.tryParse(value.replaceAll(',', '.'));
+                              if (weight == null) {
+                                return 'Ingresa un número válido';
+                              }
+                              if (weight < 30 || weight > 200) {
+                                return 'El peso debe estar entre 30 y 200 kg';
                               }
                               return null;
                             },
@@ -292,9 +299,16 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
                               size: 18,
                             ),
                             validator: (value) {
-                              final height = double.tryParse(value ?? '');
-                              if (height == null || height <= 0) {
+                              if (value == null || value.trim().isEmpty) {
                                 return 'Ingresa una estatura válida';
+                              }
+                              final height =
+                                  double.tryParse(value.replaceAll(',', '.'));
+                              if (height == null) {
+                                return 'Ingresa un número válido';
+                              }
+                              if (height < 1.0 || height > 2.2) {
+                                return 'La estatura debe estar entre 1.0 y 2.2 metros';
                               }
                               return null;
                             },

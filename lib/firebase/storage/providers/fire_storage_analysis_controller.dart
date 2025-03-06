@@ -1,4 +1,3 @@
-import 'package:mobile_preven_ia_app/firebase/auth/providers/fire_auth_controller.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_repository_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -18,14 +17,5 @@ class FireStorageAnalysisController extends _$FireStorageAnalysisController {
         .read(fireStorageRepositoryProvider)
         .createUserAnalysis(uid, analysis);
     return userAnalysis;
-  }
-
-  /// Retorna el análisis más reciente del usuario [uid].
-  Future<Map<String, dynamic>?> getLastUserAnalysis() async {
-    final user = ref.read(fireAuthControllerProvider).value?.user;
-    final lastAnalysis = await ref
-        .read(fireStorageRepositoryProvider)
-        .getLatestUserAnalysis(user?.uid ?? '');
-    return lastAnalysis;
   }
 }
