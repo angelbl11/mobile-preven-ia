@@ -10,7 +10,6 @@ class FireStorageAnalysisController extends _$FireStorageAnalysisController {
     return null;
   }
 
-  /// Crea y guarda un análisis para el usuario [uid] con la cadena JSON [analysis].
   Future<Map<String, dynamic>?> createUserAnalysis(
       String uid, String analysis) async {
     final userAnalysis = await ref

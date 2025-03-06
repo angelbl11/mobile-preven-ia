@@ -1,27 +1,29 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'fire_storage_user_controller.dart';
+part of 'api_repository_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$fireStorageUserControllerHash() =>
-    r'532846369a3318ae2dce33123b80f49b4cd252ed';
+String _$apiRepositoryHash() => r'44eecfe25b98846ad918a906e49c53115dda105b';
 
-/// See also [FireStorageUserController].
-@ProviderFor(FireStorageUserController)
-final fireStorageUserControllerProvider =
-    AsyncNotifierProvider<FireStorageUserController, UserProfile?>.internal(
-  FireStorageUserController.new,
-  name: r'fireStorageUserControllerProvider',
+/// [ApiRepository] provider
+///
+/// Copied from [apiRepository].
+@ProviderFor(apiRepository)
+final apiRepositoryProvider = AutoDisposeProvider<ApiRepository>.internal(
+  apiRepository,
+  name: r'apiRepositoryProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$fireStorageUserControllerHash,
+      : _$apiRepositoryHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$FireStorageUserController = AsyncNotifier<UserProfile?>;
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef ApiRepositoryRef = AutoDisposeProviderRef<ApiRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

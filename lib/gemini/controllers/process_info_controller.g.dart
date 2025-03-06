@@ -7,7 +7,7 @@ part of 'process_info_controller.dart';
 // **************************************************************************
 
 String _$processInfoControllerHash() =>
-    r'ace3ad95908a115ece6c5962e566cc83812f866b';
+    r'524c0a70905f68cceffe5750fa334a828a23411c';
 
 /// See also [ProcessInfoController].
 @ProviderFor(ProcessInfoController)

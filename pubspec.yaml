@@ -32,6 +32,7 @@ dependencies:
   cloud_firestore: ^5.6.5
   community_material_icon: ^5.9.55
   cupertino_icons: ^1.0.8
+  dio: ^5.8.0+1
   file_picker: ^9.0.2
   firebase_auth: ^5.5.1
   firebase_core: ^3.12.1
