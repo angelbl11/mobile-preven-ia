@@ -9,10 +9,15 @@ import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
 class ClinicalResults extends StatelessWidget {
   const ClinicalResults({
     super.key,
+    required this.analysis,
   });
+
+  final Map<String, dynamic> analysis;
 
   @override
   Widget build(BuildContext context) {
+    final stateGeneral =
+        analysis['diagnostico']['estado_global'] as String? ?? '';
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -56,10 +61,18 @@ class ClinicalResults extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: PviText(
-                    text: 'Normal',
+                    text: stateGeneral == 'ACCEPTABLE'
+                        ? 'Normal'
+                        : stateGeneral == 'OBSERVATION'
+                            ? 'Observación'
+                            : 'Crítico',
                     style: AppFonts.body1.copyWith(
                         fontSize: 12,
-                        color: AppColors.success,
+                        color: stateGeneral == 'ACCEPTABLE'
+                            ? AppColors.success
+                            : stateGeneral == 'OBSERVATION'
+                                ? AppColors.warning
+                                : AppColors.error,
                         fontWeight: FontWeight.w600)),
               ),
             ],

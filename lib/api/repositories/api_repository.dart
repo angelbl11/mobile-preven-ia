@@ -16,7 +16,7 @@ class ApiRepository {
       num age,
       bool haveObesityGenetic) async {
     final response = await dio.post(
-      '/predict/obesity',
+      'predict/obesity',
       data: {
         'imc': imc,
         'ldl': ldl,
@@ -38,7 +38,7 @@ class ApiRepository {
       num age,
       num imc) async {
     final response = await dio.post(
-      '/predict/diabetes',
+      'predict/diabetes',
       data: {
         'glucosa_ayunas': fastingGlucose,
         'hba1c': hba1c,
@@ -62,7 +62,7 @@ class ApiRepository {
       num age,
       num imc) async {
     final response = await dio.post(
-      '/predict/hypertension',
+      'predict/hipertension',
       data: {
         'presion_arterial_sistolica': systolicPressure,
         'presion_arterial_diastolica': diastolicPressure,

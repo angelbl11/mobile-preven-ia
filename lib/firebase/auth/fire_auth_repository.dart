@@ -49,7 +49,7 @@ class FireAuthRepository {
           .set({
         'next_step': 'HEALTH_INFO',
         'user_id': newUuid,
-        'created_at': FieldValue.serverTimestamp(),
+        'created_at': DateTime.now().toIso8601String(),
       });
 
       return userCredential.user;
