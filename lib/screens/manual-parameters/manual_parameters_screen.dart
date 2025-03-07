@@ -20,8 +20,9 @@ class _ManualParametersScreenState extends State<ManualParametersScreen> {
   final Map<String, TextEditingController> _controllers = {};
   Map<String, String?> _errors = {};
   bool _isFormValid = false;
+  bool _hasSubmitted =
+      false; // Bandera para controlar si se ha intentado submit
 
-  // Mapeo para formatear el nombre de cada parámetro con sus unidades.
   final Map<String, String> formattedLabels = {
     "ldl": "LDL (mg/dL)",
     "triglicéridos": "Triglicéridos (mg/dL)",
@@ -32,48 +33,55 @@ class _ManualParametersScreenState extends State<ManualParametersScreen> {
     "presión arterial diastólica": "Presión arterial diastólica (mmHg)",
   };
 
+  final Map<String, String> standardizedKeys = {
+    "Hb1Ac (%)": "hba1c",
+    "Presión arterial sistólica (mmHg)": "presion_arterial_sistolica",
+    "Presión arterial diastólica (mmHg)": "presion_arterial_diastolica",
+    "LDL (mg/dL)": "ldl",
+    "Triglicéridos (mg/dL)": "trigliceridos",
+    "Glucosa (mg/dL)": "glucosa",
+    "Creatinina (mg/dL)": "creatinina",
+  };
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Recupera la lista de parámetros faltantes desde los argumentos de la ruta.
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is Map<String, dynamic>) {
       missingParams = args['missingParameters'] as List<String>;
       extractedText = args['extractedText'] as String;
-      // Para cada parámetro faltante, se crea el controlador (si no existe) y se inicializa el error.
       for (var param in missingParams) {
         if (!_controllers.containsKey(param)) {
           _controllers[param] = TextEditingController();
-          // Agrega un listener para validar el campo cada vez que cambie.
+          // Se agrega el listener para actualizar la validez del formulario.
           _controllers[param]!.addListener(_validateForm);
         }
         _errors[param] = null;
       }
-      // Validamos inicialmente en caso de que ya haya algún valor.
       _validateForm();
     }
   }
 
   @override
   void dispose() {
-    // Limpia todos los controladores.
     for (var controller in _controllers.values) {
       controller.dispose();
     }
     super.dispose();
   }
 
-  /// Valida que cada input tenga valor y que sea un número decimal válido.
+  // Actualiza la validez y, si ya se intentó submit, los errores.
   void _validateForm() {
     bool valid = true;
     final Map<String, String?> newErrors = {};
     for (var param in missingParams) {
       final value = _controllers[param]?.text.trim() ?? '';
       if (value.isEmpty) {
-        newErrors[param] = "Campo requerido";
+        if (_hasSubmitted) newErrors[param] = "Campo requerido";
         valid = false;
       } else if (double.tryParse(value) == null) {
-        newErrors[param] = "Debe ser un número decimal válido";
+        if (_hasSubmitted)
+          newErrors[param] = "Debe ser un número decimal válido";
         valid = false;
       } else {
         newErrors[param] = null;
@@ -86,10 +94,18 @@ class _ManualParametersScreenState extends State<ManualParametersScreen> {
   }
 
   void _submitParameters() {
+    setState(() {
+      _hasSubmitted = true;
+    });
+    _validateForm();
+    if (!_isFormValid) {
+      // Se detiene el submit y se muestran errores.
+      return;
+    }
     final Map<String, String> parameterValues = {};
     for (var param in missingParams) {
-      final formattedKey = formattedLabels[param] ?? param;
-      parameterValues[formattedKey] = _controllers[param]?.text.trim() ?? "";
+      final standardizedKey = standardizedKeys[param] ?? param.toLowerCase();
+      parameterValues[standardizedKey] = _controllers[param]?.text.trim() ?? "";
     }
 
     PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
@@ -123,13 +139,15 @@ class _ManualParametersScreenState extends State<ManualParametersScreen> {
                     "Ingrese los parámetros faltantes para continuar con el diagnóstico",
                 style: AppFonts.subtitle2,
               ),
-              // Genera un PviTextInput para cada parámetro faltante.
+              const SizedBox(height: 16),
+              // Genera un PviTextInput para cada parámetro.
               ...missingParams.map(
                 (param) => PviTextInput(
                   controller: _controllers[param],
                   label: formattedLabels[param] ?? param,
                   errorText: _errors[param],
-                  onChanged: (value) => _validateForm(),
+                  // Aunque se actualiza la validez en cada cambio, los errores solo se muestran tras el submit.
+                  onChanged: (_) => _validateForm(),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                 ),
@@ -138,6 +156,7 @@ class _ManualParametersScreenState extends State<ManualParametersScreen> {
                 width: double.infinity,
                 height: 56,
                 child: PviButton(
+                  // Se deshabilita el botón si el formulario no es válido.
                   onPressed: _isFormValid ? _submitParameters : null,
                   child: PviText(
                     text: "Actualizar parámetros",
@@ -149,8 +168,9 @@ class _ManualParametersScreenState extends State<ManualParametersScreen> {
                 width: double.infinity,
                 height: 56,
                 child: PviTextButton(
-                    text: 'Cancelar',
-                    onPressed: () => PersistentNavBarNavigator.pop(context)),
+                  text: 'Cancelar',
+                  onPressed: () => PersistentNavBarNavigator.pop(context),
+                ),
               ),
             ],
           ),

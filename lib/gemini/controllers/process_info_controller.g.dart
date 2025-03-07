@@ -7,12 +7,12 @@ part of 'process_info_controller.dart';
 // **************************************************************************
 
 String _$processInfoControllerHash() =>
-    r'ace3ad95908a115ece6c5962e566cc83812f866b';
+    r'b9c55c8b96ddd8aca2d0e52bb86f9ddd3318a06b';
 
 /// See also [ProcessInfoController].
 @ProviderFor(ProcessInfoController)
-final processInfoControllerProvider =
-    AsyncNotifierProvider<ProcessInfoController, String?>.internal(
+final processInfoControllerProvider = AutoDisposeAsyncNotifierProvider<
+    ProcessInfoController, Map<String, dynamic>?>.internal(
   ProcessInfoController.new,
   name: r'processInfoControllerProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -22,6 +22,7 @@ final processInfoControllerProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$ProcessInfoController = AsyncNotifier<String?>;
+typedef _$ProcessInfoController
+    = AutoDisposeAsyncNotifier<Map<String, dynamic>?>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
