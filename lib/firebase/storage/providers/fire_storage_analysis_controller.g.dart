@@ -7,7 +7,7 @@ part of 'fire_storage_analysis_controller.dart';
 // **************************************************************************
 
 String _$fireStorageAnalysisControllerHash() =>
-    r'adf83f525736aeb4068f8d325f177d2dc1b1f35b';
+    r'2a116a7b3a2f65ff428e67a613937ae2760428c4';
 
 /// See also [FireStorageAnalysisController].
 @ProviderFor(FireStorageAnalysisController)

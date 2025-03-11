@@ -73,6 +73,9 @@ class FireAuthController extends _$FireAuthController {
     required bool isGeneticRiskObesity,
     required bool isGeneticRiskDiabetes,
     required bool isGeneticRiskHypertension,
+    required bool monitorLDL,
+    required bool monitorGlucose,
+    required bool monitorIMC,
   }) async {
     try {
       await ref.read(fireAuthRepositoryProvider).completeHealthForm(
@@ -87,6 +90,9 @@ class FireAuthController extends _$FireAuthController {
             isGeneticRiskObesity: isGeneticRiskObesity,
             isGeneticRiskDiabetes: isGeneticRiskDiabetes,
             isGeneticRiskHypertension: isGeneticRiskHypertension,
+            monitorLDL: monitorLDL,
+            monitorGlucose: monitorGlucose,
+            monitorIMC: monitorIMC,
           );
     } catch (error) {
       rethrow;

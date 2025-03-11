@@ -12,6 +12,7 @@ class PviPasswordInput extends StatefulWidget {
   final Widget? prefixIcon;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
+  final void Function(String)? onFieldSubmitted;
 
   const PviPasswordInput({
     super.key,
@@ -23,6 +24,7 @@ class PviPasswordInput extends StatefulWidget {
     this.prefixIcon,
     this.controller,
     this.validator,
+    this.onFieldSubmitted,
   });
 
   @override
@@ -39,6 +41,7 @@ class PviPasswordInputState extends State<PviPasswordInput> {
   @override
   Widget build(BuildContext context) {
     return PviTextInput(
+      onFieldSubmitted: widget.onFieldSubmitted,
       controller: widget.controller,
       validator: widget.validator,
       keyboardType: TextInputType.visiblePassword,

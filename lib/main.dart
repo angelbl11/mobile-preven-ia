@@ -4,6 +4,7 @@ import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_preven_ia_app/classes/environment_keys.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
+import 'package:mobile_preven_ia_app/screens/analysis-details/analysis_details_screen.dart';
 import 'package:mobile_preven_ia_app/screens/health-info/health_info_screen.dart';
 import 'package:mobile_preven_ia_app/screens/manual-parameters/manual_parameters_screen.dart';
 import 'package:mobile_preven_ia_app/screens/navigation-handler/navigation_handler_screen.dart';
@@ -36,6 +37,7 @@ class MainApp extends StatelessWidget {
           '/home': (_) => NavigationHandlerScreen(),
           '/upload-file': (_) => const UploadFileScreen(),
           '/manual-parameters': (_) => const ManualParametersScreen(),
+          '/analysis-details': (_) => const AnalysisDetailsScreen(),
         },
       ),
     );

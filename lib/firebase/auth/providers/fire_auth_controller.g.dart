@@ -7,7 +7,7 @@ part of 'fire_auth_controller.dart';
 // **************************************************************************
 
 String _$fireAuthControllerHash() =>
-    r'30154c08eab8c83dd61a29ad545502e234b0e31f';
+    r'c0c3687aa8a161b745cfa8645407a26614d7c49f';
 
 /// See also [FireAuthController].
 @ProviderFor(FireAuthController)

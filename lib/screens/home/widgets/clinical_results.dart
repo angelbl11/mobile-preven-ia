@@ -1,12 +1,17 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_analysis_controller.dart';
+import 'package:mobile_preven_ia_app/functions/status_handler_function.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
+import 'package:mobile_preven_ia_app/screens/analysis-details/analysis_details_screen.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
-class ClinicalResults extends StatelessWidget {
+class ClinicalResults extends ConsumerWidget {
   const ClinicalResults({
     super.key,
     required this.analysis,
@@ -14,10 +19,25 @@ class ClinicalResults extends StatelessWidget {
 
   final Map<String, dynamic> analysis;
 
+  String _formatDate(String isoString) {
+    try {
+      final date = DateTime.parse(isoString);
+      final day = date.day.toString().padLeft(2, '0');
+      final month = date.month.toString().padLeft(2, '0');
+      final year = date.year;
+      final hour = date.hour.toString().padLeft(2, '0');
+      final minute = date.minute.toString().padLeft(2, '0');
+      return '$day-$month-$year $hour:$minute';
+    } catch (e) {
+      return isoString;
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final stateGeneral =
         analysis['diagnostico']['estado_global'] as String? ?? '';
+    final date = _formatDate(analysis['created_at'] as String? ?? '');
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -48,8 +68,7 @@ class ClinicalResults extends StatelessWidget {
                 children: [
                   PviText(text: 'Prueba de sangre', style: AppFonts.body2),
                   PviText(
-                      text: '25-03-2025',
-                      style: AppFonts.body1.copyWith(fontSize: 12)),
+                      text: date, style: AppFonts.body1.copyWith(fontSize: 12)),
                 ],
               ),
               const Spacer(),
@@ -61,104 +80,55 @@ class ClinicalResults extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: PviText(
-                    text: stateGeneral == 'ACCEPTABLE'
-                        ? 'Normal'
+                    text: stateGeneral == 'CRITICAL'
+                        ? 'Crítico'
                         : stateGeneral == 'OBSERVATION'
-                            ? 'Observación'
-                            : 'Crítico',
+                            ? 'Monitoreo'
+                            : 'Normal',
                     style: AppFonts.body1.copyWith(
+                        fontWeight: FontWeight.w600,
                         fontSize: 12,
                         color: stateGeneral == 'ACCEPTABLE'
                             ? AppColors.success
                             : stateGeneral == 'OBSERVATION'
                                 ? AppColors.warning
-                                : AppColors.error,
-                        fontWeight: FontWeight.w600)),
+                                : AppColors.error)),
               ),
-            ],
-          ),
-          Divider(
-            color: AppColors.gray3.withOpacity(0.2),
-            height: 1,
-          ),
-          Row(
-            spacing: 12,
-            children: [
-              PviText(
-                  text: 'HbA1c',
-                  style: AppFonts.body2.copyWith(color: AppColors.gray5)),
               const Spacer(),
-              PviText(
-                  text: '10.5%',
-                  style: AppFonts.body2.copyWith(color: AppColors.text3)),
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: AppColors.success,
-                  borderRadius: BorderRadius.circular(100),
+              InkWell(
+                onTap: () async {
+                  StatusHandlerFunction.handleStatus(
+                    context: context,
+                    action: ref
+                        .read(fireStorageAnalysisControllerProvider.notifier)
+                        .getUserAnalysisById(analysis['id']),
+                    onSuccessCallBack: () {
+                      PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+                        context,
+                        screen: const AnalysisDetailsScreen(),
+                        withNavBar: false,
+                        pageTransitionAnimation: PageTransitionAnimation.fade,
+                        settings: RouteSettings(
+                          arguments: {
+                            'analysis': analysis,
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.gray4,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: const Icon(
+                    LucideIcons.chevronRight,
+                    color: AppColors.gray5,
+                  ),
                 ),
-              )
-            ],
-          ),
-          Row(
-            spacing: 12,
-            children: [
-              PviText(
-                  text: 'LDL',
-                  style: AppFonts.body2.copyWith(color: AppColors.gray5)),
-              const Spacer(),
-              PviText(
-                  text: '100 mg/dL',
-                  style: AppFonts.body2.copyWith(color: AppColors.text3)),
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: AppColors.success,
-                  borderRadius: BorderRadius.circular(100),
-                ),
-              )
-            ],
-          ),
-          Row(
-            spacing: 12,
-            children: [
-              PviText(
-                  text: 'Triglicéridos',
-                  style: AppFonts.body2.copyWith(color: AppColors.gray5)),
-              const Spacer(),
-              PviText(
-                  text: '100 mg/dL',
-                  style: AppFonts.body2.copyWith(color: AppColors.text3)),
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: AppColors.success,
-                  borderRadius: BorderRadius.circular(100),
-                ),
-              )
-            ],
-          ),
-          Row(
-            spacing: 12,
-            children: [
-              PviText(
-                  text: 'Glucosa',
-                  style: AppFonts.body2.copyWith(color: AppColors.gray5)),
-              const Spacer(),
-              PviText(
-                  text: '100 mg/dL',
-                  style: AppFonts.body2.copyWith(color: AppColors.text3)),
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: AppColors.success,
-                  borderRadius: BorderRadius.circular(100),
-                ),
-              )
+              ),
             ],
           ),
         ],

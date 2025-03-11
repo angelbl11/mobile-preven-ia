@@ -17,6 +17,7 @@ class PviTextInput extends StatelessWidget {
   final String? Function(String?)? validator;
   final VoidCallback? onTap;
   final bool readOnly;
+  final void Function(String)? onFieldSubmitted;
   const PviTextInput({
     super.key,
     this.onChanged,
@@ -32,11 +33,13 @@ class PviTextInput extends StatelessWidget {
     this.validator,
     this.onTap,
     this.readOnly = false,
+    this.onFieldSubmitted,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      onFieldSubmitted: onFieldSubmitted,
       readOnly: readOnly,
       onTap: onTap,
       controller: controller,

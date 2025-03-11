@@ -58,4 +58,19 @@ class FireStorageRepository {
       rethrow;
     }
   }
+
+  Future<Map<String, dynamic>> getUserAnalysisById(
+      String uid, String analysisId) async {
+    try {
+      final docSnapshot = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('analysis')
+          .doc(analysisId)
+          .get();
+      return docSnapshot.data() as Map<String, dynamic>;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
