@@ -25,4 +25,12 @@ class FireStorageAnalysisController extends _$FireStorageAnalysisController {
         await ref.read(fireStorageRepositoryProvider).getUserAnalyses(uid);
     return userAnalyses;
   }
+
+  Future<Map<String, dynamic>> getUserAnalysisById(String analysisId) async {
+    final uid = ref.read(fireAuthControllerProvider).value?.user.uid ?? '';
+    final userAnalysis = await ref
+        .read(fireStorageRepositoryProvider)
+        .getUserAnalysisById(uid, analysisId);
+    return userAnalysis;
+  }
 }

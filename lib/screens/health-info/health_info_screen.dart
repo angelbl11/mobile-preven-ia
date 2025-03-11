@@ -38,6 +38,11 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
   bool _hasDiabetes = false;
   bool _hasHypertension = false;
   bool _hasObesity = false;
+  bool _monitorLDL = false;
+  bool _monitorGlucose = false;
+  bool _monitorIMC = false;
+
+  final List<bool> _selectedGender = [false, false];
 
   final _formKey = GlobalKey<FormState>();
 
@@ -53,8 +58,6 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
     super.dispose();
   }
 
-  /// Opens a native date picker (Cupertino on iOS, Material on Android)
-  /// and sets the selected date on the birthdate field.
   Future<void> _selectBirthDate(BuildContext context) async {
     DateTime? selectedDate;
     if (Platform.isIOS) {
@@ -68,9 +71,8 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
       );
     }
     if (selectedDate != null) {
-      // Format the date as dd/MM/yyyy.
       String formattedDate =
-          "${selectedDate.day.toString().padLeft(2, '0')}/${selectedDate.month.toString().padLeft(2, '0')}/${selectedDate.year}";
+          "${selectedDate.day.toString().padLeft(2, '0')}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.year}";
       setState(() {
         _birthDateController.text = formattedDate;
       });
@@ -115,7 +117,6 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
     );
   }
 
-  /// Submits the form after validating all fields.
   Future<void> _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
       final fullName = _fullNameController.text.trim();
@@ -128,6 +129,9 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
       final hasDiabetes = _hasDiabetes;
       final hasHypertension = _hasHypertension;
       final hasObesity = _hasObesity;
+      final monitorLDL = _monitorLDL;
+      final monitorGlucose = _monitorGlucose;
+      final monitorIMC = _monitorIMC;
       await StatusHandlerFunction.handleStatus(
         context: context,
         action: ref
@@ -144,6 +148,9 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
               isGeneticRiskDiabetes: hasDiabetes,
               isGeneticRiskHypertension: hasHypertension,
               isGeneticRiskObesity: hasObesity,
+              monitorLDL: monitorLDL,
+              monitorGlucose: monitorGlucose,
+              monitorIMC: monitorIMC,
             ),
         onSuccessCallBack: () {
           showToast(
@@ -154,6 +161,15 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
         },
       );
     }
+  }
+
+  void _onGenderSelected(int index) {
+    setState(() {
+      for (int i = 0; i < _selectedGender.length; i++) {
+        _selectedGender[i] = i == index;
+      }
+      _genderController.text = index == 0 ? 'male' : 'female';
+    });
   }
 
   @override
@@ -222,7 +238,7 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
                     PviTextInput(
                       controller: _birthDateController,
                       keyboardType: TextInputType.datetime,
-                      label: 'Fecha de nacimiento (dd/mm/aaaa)',
+                      label: 'Fecha de nacimiento',
                       prefixIcon: const Icon(
                         LucideIcons.calendar,
                         color: AppColors.primary,
@@ -235,7 +251,7 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
                           return 'La fecha de nacimiento es requerida';
                         }
                         try {
-                          final parts = value.split('/');
+                          final parts = value.split('-');
                           if (parts.length != 3) {
                             return 'Formato de fecha inválido';
                           }
@@ -316,26 +332,60 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
                         ),
                       ],
                     ),
-                    // Gender Input
-                    PviTextInput(
-                      controller: _genderController,
-                      keyboardType: TextInputType.text,
-                      label: 'Género (M/F)',
-                      prefixIcon: const Icon(
-                        CommunityMaterialIcons.gender_male_female,
+                    SizedBox(
+                      width: double.infinity,
+                      child: ToggleButtons(
+                        isSelected: _selectedGender,
+                        onPressed: _onGenderSelected,
+                        borderRadius: BorderRadius.circular(8),
+                        selectedColor: Colors.white,
+                        fillColor: AppColors.primary,
                         color: AppColors.primary,
-                        size: 18,
+                        constraints: BoxConstraints.expand(
+                          height: 40,
+                          width: MediaQuery.of(context).size.width / 2 - 27,
+                        ),
+                        children: [
+                          Row(
+                            spacing: 8,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                CommunityMaterialIcons.gender_male,
+                                size: 18,
+                              ),
+                              PviText(
+                                text: 'Masculino',
+                                style: AppFonts.body1.copyWith(
+                                  color: _selectedGender[0]
+                                      ? Colors.white
+                                      : AppColors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            spacing: 8,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                CommunityMaterialIcons.gender_female,
+                                size: 18,
+                              ),
+                              PviText(
+                                text: 'Femenino',
+                                style: AppFonts.body1.copyWith(
+                                  color: _selectedGender[1]
+                                      ? Colors.white
+                                      : AppColors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'El género es requerido';
-                        }
-                        final gender = value.trim().toUpperCase();
-                        if (gender != 'M' && gender != 'F') {
-                          return 'El género debe ser "M" o "F"';
-                        }
-                        return null;
-                      },
                     ),
 
                     Container(
@@ -410,6 +460,85 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
                               ),
                               PviText(
                                 text: 'Obesidad',
+                                style: AppFonts.body1,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.gray4,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        spacing: 16,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PviText(
+                            text: 'Parámetros de salud',
+                            style: AppFonts.headline4,
+                          ),
+                          PviText(
+                            text:
+                                'Elige los parámetros de salud más relevantes para ti',
+                            style: AppFonts.body1,
+                          ),
+                          Row(
+                            children: [
+                              Checkbox(
+                                activeColor: AppColors.primary,
+                                checkColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                value: _monitorLDL,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _monitorLDL = value ?? false;
+                                  });
+                                },
+                              ),
+                              PviText(
+                                text: 'LDL (Colesterol malo)',
+                                style: AppFonts.body1,
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Checkbox(
+                                activeColor: AppColors.primary,
+                                checkColor: Colors.white,
+                                value: _monitorGlucose,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _monitorGlucose = value ?? false;
+                                  });
+                                },
+                              ),
+                              PviText(
+                                text: 'Glucosa',
+                                style: AppFonts.body1,
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Checkbox(
+                                activeColor: AppColors.primary,
+                                checkColor: Colors.white,
+                                value: _monitorIMC,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _monitorIMC = value ?? false;
+                                  });
+                                },
+                              ),
+                              PviText(
+                                text: 'Relación peso/estatura (IMC)',
                                 style: AppFonts.body1,
                               ),
                             ],

@@ -9,39 +9,44 @@ import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class ProcessingFileScreen extends ConsumerStatefulWidget {
-  const ProcessingFileScreen({Key? key}) : super(key: key);
+  const ProcessingFileScreen({super.key});
 
   @override
-  _ProcessingFileScreenState createState() => _ProcessingFileScreenState();
+  ProcessingFileScreenState createState() => ProcessingFileScreenState();
 }
 
-class _ProcessingFileScreenState extends ConsumerState<ProcessingFileScreen> {
+class ProcessingFileScreenState extends ConsumerState<ProcessingFileScreen> {
   bool _hasNavigated = false;
+  late Future<Map<String, dynamic>?> _processInfoFuture;
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+              {};
+      final extractedText = args['extractedText'] as String? ?? '';
+      final isUsingModel = args['isUsingModel'] as bool? ?? false;
+      final parameterValues =
+          args['parameterValues'] as Map<String, String>? ?? {};
+
+      _processInfoFuture = isUsingModel
+          ? ref
+              .read(processInfoControllerProvider.notifier)
+              .analyzeTextWithModel(extractedText, parameterValues)
+          : ref
+              .read(processInfoControllerProvider.notifier)
+              .analyzeTextWithoutModel(extractedText);
+      _initialized = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final args =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
-            {};
-    final extractedText = args['extractedText'] as String? ?? '';
-    final isUsingModel = args['isUsingModel'] as bool? ?? false;
-    final parameterValues =
-        args['parameterValues'] as Map<String, String>? ?? {};
-
-    final processInfoFutureWithoutModel = ref
-        .watch(processInfoControllerProvider.notifier)
-        .analyzeTextWithoutModel(extractedText);
-
-    final processInfoFutureWithModel = ref
-        .watch(processInfoControllerProvider.notifier)
-        .analyzeTextWithModel(extractedText, parameterValues);
-
-    final processInfoFuture = isUsingModel
-        ? processInfoFutureWithModel
-        : processInfoFutureWithoutModel;
-
     return FutureBuilder(
-      future: processInfoFuture,
+      future: _processInfoFuture,
       builder: (context, snapshot) {
         if (snapshot.hasData && !_hasNavigated) {
           _hasNavigated = true;

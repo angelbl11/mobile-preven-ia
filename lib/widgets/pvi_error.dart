@@ -57,11 +57,11 @@ class PviError extends ConsumerWidget {
             ),
             const Spacer(),
             PviButton(
+              onPressed: onClose,
               child: PviText(
                 text: 'Cerrar',
                 style: AppFonts.button1.copyWith(color: AppColors.background),
               ),
-              onPressed: onClose,
             ),
           ],
         ),

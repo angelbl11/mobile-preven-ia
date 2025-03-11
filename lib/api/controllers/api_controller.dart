@@ -32,7 +32,6 @@ class ApiController extends _$ApiController {
         haveObesityGenetic,
       );
     } catch (e) {
-      print('Error al obtener la predicción de obesidad: $e');
       rethrow;
     }
   }
@@ -55,7 +54,6 @@ class ApiController extends _$ApiController {
         imc,
       );
     } catch (e) {
-      print('Error al obtener la predicción de diabetes: $e');
       rethrow;
     }
   }
@@ -82,7 +80,6 @@ class ApiController extends _$ApiController {
         imc,
       );
     } catch (e) {
-      print('Error al obtener la predicción de hipertensión: $e');
       rethrow;
     }
   }

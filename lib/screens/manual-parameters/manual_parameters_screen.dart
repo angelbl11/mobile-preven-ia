@@ -80,8 +80,9 @@ class _ManualParametersScreenState extends State<ManualParametersScreen> {
         if (_hasSubmitted) newErrors[param] = "Campo requerido";
         valid = false;
       } else if (double.tryParse(value) == null) {
-        if (_hasSubmitted)
+        if (_hasSubmitted) {
           newErrors[param] = "Debe ser un número decimal válido";
+        }
         valid = false;
       } else {
         newErrors[param] = null;

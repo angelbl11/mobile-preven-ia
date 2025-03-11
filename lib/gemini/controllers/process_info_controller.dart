@@ -4,7 +4,7 @@ import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:mobile_preven_ia_app/api/controllers/api_controller.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_analysis_controller.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_user_controller.dart';
-import 'package:mobile_preven_ia_app/gemini/controllers/gemini_controller.dart';
+import 'package:mobile_preven_ia_app/gemini/prompts/analyze_with_model_prompt.dart';
 import 'package:mobile_preven_ia_app/gemini/prompts/analyze_without_model_prompt.dart';
 import 'package:mobile_preven_ia_app/gemini/prompts/extraction_prompt.dart';
 import 'package:mobile_preven_ia_app/firebase/auth/providers/fire_auth_controller.dart';
@@ -15,17 +15,11 @@ part 'process_info_controller.g.dart';
 
 @riverpod
 class ProcessInfoController extends _$ProcessInfoController {
-  // Variable para almacenar en caché el análisis con modelos.
-  Map<String, dynamic>? _cachedAnalysisWithModel;
-  // Bandera para evitar ejecuciones concurrentes.
-  bool _isAnalyzingWithModel = false;
-
   @override
   Future<Map<String, dynamic>?> build() async {
-    return _cachedAnalysisWithModel;
+    return null;
   }
 
-  /// Parsea la fecha de nacimiento en formato "DD/MM/YYYY".
   DateTime? _parseBirthDate(String? birthDateStr) {
     if (birthDateStr == null || birthDateStr.isEmpty) return null;
     try {
@@ -40,7 +34,6 @@ class ProcessInfoController extends _$ProcessInfoController {
     }
   }
 
-  /// Calcula la edad a partir de la fecha de nacimiento.
   int _calculateAge(DateTime birthDate) {
     final now = DateTime.now();
     int age = now.year - birthDate.year;
@@ -52,18 +45,13 @@ class ProcessInfoController extends _$ProcessInfoController {
   }
 
   String parseGender(String gender) {
-    return (gender == 'M') ? 'Masculino' : 'Femenino';
-  }
-
-  String parseGenderForModel(String gender) {
-    return (gender == 'M') ? 'male' : 'female';
+    return (gender == 'MALE') ? 'Masculino' : 'Femenino';
   }
 
   Future<Map<String, dynamic>?> analyzeTextWithoutModel(
       String plainText) async {
-    final geminiController = ref.watch(geminiControllerProvider);
-
-    final extractionResponse = await geminiController.prompt(
+    final gemini = Gemini.instance;
+    final extractionResponse = await gemini.prompt(
       parts: [
         Part.text(extractionPrompt),
         Part.text(plainText),
@@ -71,7 +59,7 @@ class ProcessInfoController extends _$ProcessInfoController {
     );
 
     final userProfile =
-        await ref.watch(fireStorageUserControllerProvider.future);
+        await ref.read(fireStorageUserControllerProvider.future);
 
     int age = 0;
     final birthDate = _parseBirthDate(userProfile?.birthDate);
@@ -84,7 +72,7 @@ class ProcessInfoController extends _$ProcessInfoController {
         .replaceAll('valor_de_sexo', parseGender(userProfile?.gender ?? 'M'))
         .replaceAll('valor_de_edad', age.toString());
 
-    final analysisResponse = await geminiController.prompt(
+    final analysisResponse = await gemini.prompt(
       parts: [
         Part.text(modifiedAnalyzePrompt),
         Part.text(extractionResponse?.output ?? ''),
@@ -97,6 +85,7 @@ class ProcessInfoController extends _$ProcessInfoController {
       final persistedAnalysis = await ref
           .read(fireStorageAnalysisControllerProvider.notifier)
           .createUserAnalysis(currentUser.uid, analysisOutput);
+      state = AsyncData(persistedAnalysis);
       return persistedAnalysis;
     }
 
@@ -130,18 +119,9 @@ class ProcessInfoController extends _$ProcessInfoController {
     String plainText,
     Map<String, String> parameterValues,
   ) async {
-    // Si ya se obtuvo un resultado, retornarlo
-    if (_cachedAnalysisWithModel != null) {
-      return _cachedAnalysisWithModel;
-    }
-    // Evitar ejecuciones concurrentes
-    if (_isAnalyzingWithModel) return null;
-    _isAnalyzingWithModel = true;
+    final gemini = Gemini.instance;
 
-    final geminiController = ref.read(geminiControllerProvider);
-
-    // Primera etapa: extraer datos del texto.
-    final extractionResponse = await geminiController.prompt(
+    final extractionResponse = await gemini.prompt(
       parts: [
         Part.text(extractionPrompt),
         Part.text(plainText),
@@ -158,7 +138,6 @@ class ProcessInfoController extends _$ProcessInfoController {
       }
     }
 
-    print('Valor de exams: $extractedData');
     final exams = extractedData;
 
     final userProfile =
@@ -190,13 +169,16 @@ class ProcessInfoController extends _$ProcessInfoController {
             num.parse(parameterValues['presión arterial diastólica'] ?? '0')
                 .toDouble();
 
+    final finalHbA1c = _getValueFromExamMultiple(exams, ['hba1c']) ??
+        num.parse(parameterValues['hba1c'] ?? '0').toDouble();
+
     // Llamadas a los modelos premium:
     final obesityPrediction =
         await ref.read(apiControllerProvider.notifier).getObesityPrediction(
               userProfile?.bmi ?? 0,
               finalLDL,
               finalTriglycerides,
-              parseGenderForModel(userProfile?.gender ?? 'M'),
+              userProfile?.gender ?? 'male',
               age,
               userProfile?.isGeneticRiskObesity ?? false,
             );
@@ -204,9 +186,9 @@ class ProcessInfoController extends _$ProcessInfoController {
     final diabetesPrediction =
         await ref.read(apiControllerProvider.notifier).getDiabetesPrediction(
               finalFastingGlucose,
-              num.parse(parameterValues['hba1c'] ?? '0'),
+              finalHbA1c,
               userProfile?.isGeneticRiskDiabetes ?? false,
-              parseGenderForModel(userProfile?.gender ?? 'M'),
+              userProfile?.gender ?? 'male',
               age,
               userProfile?.bmi ?? 0,
             );
@@ -219,29 +201,25 @@ class ProcessInfoController extends _$ProcessInfoController {
           finalCreatinine,
           finalLDL,
           userProfile?.isGeneticRiskHypertension ?? false,
-          parseGenderForModel(userProfile?.gender ?? 'M'),
+          userProfile?.gender ?? 'male',
           age,
           userProfile?.bmi ?? 0,
         );
 
-    // Construir un Map con los resultados de los modelos.
     final predictionsMap = {
       "obesidad": obesityPrediction.toJson(),
       "diabetes": diabetesPrediction.toJson(),
       "hipertension": hypertensionPrediction.toJson(),
     };
 
-    // Convertir el Map de predicciones a cadena JSON.
     final predictionsJson = json.encode(predictionsMap);
 
-    // Reemplazar los placeholders en el prompt premium con los datos básicos.
-    final modifiedAnalyzePrompt = analyzeWithoutModelPrompt
+    final modifiedAnalyzePrompt = analyzeWithModelPrompt
         .replaceAll('valor_de_IMC', userProfile?.bmi.toString() ?? '0')
         .replaceAll('valor_de_sexo', parseGender(userProfile?.gender ?? 'M'))
         .replaceAll('valor_de_edad', age.toString());
 
-    // Llamar al prompt premium, pasando la cadena de predicciones.
-    final analysisResponse = await geminiController.prompt(
+    final analysisResponse = await gemini.prompt(
       parts: [
         Part.text(modifiedAnalyzePrompt),
         Part.text(plainText),
@@ -255,13 +233,11 @@ class ProcessInfoController extends _$ProcessInfoController {
       final persistedAnalysis = await ref
           .read(fireStorageAnalysisControllerProvider.notifier)
           .createUserAnalysis(currentUser.uid, analysisOutput);
-      // Guardar en caché el resultado para futuras llamadas.
-      _cachedAnalysisWithModel = persistedAnalysis;
-      _isAnalyzingWithModel = false;
+
+      state = AsyncData(persistedAnalysis);
       return persistedAnalysis;
     }
 
-    _isAnalyzingWithModel = false;
     return null;
   }
 }

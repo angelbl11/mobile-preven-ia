@@ -29,8 +29,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
-  // This flag indicates whether the form has been submitted (so that errors are shown)
-  // and also whether the inputs (email and passwords) are valid.
   bool _submitted = false;
   bool _isFormValid = false;
 
@@ -47,9 +45,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
-    // Validate email format.
     final emailValid = RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email);
-    // Ensure passwords are not empty and match.
     final passwordsMatch = password.isNotEmpty && (password == confirmPassword);
 
     final valid = emailValid && passwordsMatch;
@@ -161,6 +157,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       },
                     ),
                     PviPasswordInput(
+                      onFieldSubmitted: (_) => _submit(),
                       controller: _confirmPasswordController,
                       prefixIcon: const Icon(
                         LucideIcons.lock,
@@ -181,7 +178,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     RichText(
                       textAlign: TextAlign.center,
                       text: TextSpan(
-                        style: AppFonts.body1, // Estilo base para el texto
+                        style: AppFonts.body1,
                         children: [
                           const TextSpan(
                             text: 'Al registrarte aceptas nuestros ',
@@ -190,10 +187,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             text: 'Términos y condiciones',
                             style: AppFonts.button1.copyWith(
                                 fontSize: 14, color: AppColors.primary),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                // Acción a ejecutar al pulsar "Términos y condiciones"
-                              },
+                            recognizer: TapGestureRecognizer()..onTap = () {},
                           ),
                           const TextSpan(
                             text: ' y nuestra ',

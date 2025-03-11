@@ -24,7 +24,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // Track basic validity (for enabling the button) using our own logic.
   bool _isFormValid = false;
 
   @override
@@ -58,7 +57,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   }
 
   Future<void> _submit() async {
-    // Validate the form: this will display error messages if invalid.
     if (_formKey.currentState?.validate() ?? false) {
       String? step;
       await StatusHandlerFunction.handleStatus(
@@ -73,7 +71,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           step = res?.nextStep;
         }(),
         onSuccessCallBack: () {
-          if (step == 'health-info') {
+          if (step == 'HEALTH_INFO') {
             Navigator.pushNamed(context, '/health-info');
           } else {
             Navigator.pushNamed(context, '/home');
@@ -93,7 +91,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             child: SingleChildScrollView(
               child: Form(
                 key: _formKey,
-                // Do not autovalidate; errors only show on submit.
                 autovalidateMode: AutovalidateMode.disabled,
                 child: Column(
                   spacing: 22,
@@ -124,7 +121,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                         size: 18,
                         color: AppColors.primary,
                       ),
-                      // No onChanged validation trigger for errors (we use our own logic for the button).
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Ingresa un correo electrónico';
@@ -137,6 +133,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       },
                     ),
                     PviPasswordInput(
+                      onFieldSubmitted: (_) => _submit(),
                       controller: _passwordController,
                       prefixIcon: const Icon(
                         LucideIcons.lock,

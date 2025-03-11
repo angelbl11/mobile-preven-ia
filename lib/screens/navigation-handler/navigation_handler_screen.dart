@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
-import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/screens/home/home_screen.dart';
+import 'package:mobile_preven_ia_app/screens/monitoring-history/monitoring_history_screen.dart';
 import 'package:mobile_preven_ia_app/screens/upload-file/upload_file_screen.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
@@ -19,7 +19,7 @@ class NavigationHandlerScreen extends StatelessWidget {
     return [
       const HomeScreen(),
       const UploadFileScreen(),
-      Center(child: Text("History", style: AppFonts.headline2)), // History
+      const MonitoringHistoryScreen(),
     ];
   }
 

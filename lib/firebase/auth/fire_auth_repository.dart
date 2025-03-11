@@ -71,6 +71,9 @@ class FireAuthRepository {
     required bool isGeneticRiskObesity,
     required bool isGeneticRiskDiabetes,
     required bool isGeneticRiskHypertension,
+    required bool monitorLDL,
+    required bool monitorGlucose,
+    required bool monitorIMC,
   }) async {
     try {
       // Optionally update the user's display name.
@@ -85,10 +88,15 @@ class FireAuthRepository {
         'birth_date': birthDate,
         'weight': weight,
         'height': height,
-        'bmi': weight / (height * height),
+        'bmi': height > 0
+            ? double.parse((weight / (height * height)).toStringAsFixed(2))
+            : 0,
         'is_genetic_risk_obesity': isGeneticRiskObesity,
         'is_genetic_risk_diabetes': isGeneticRiskDiabetes,
         'is_genetic_risk_hypertension': isGeneticRiskHypertension,
+        'monitor_ldl': monitorLDL,
+        'monitor_glucose': monitorGlucose,
+        'monitor_imc': monitorIMC,
         'next_step': 'COMPLETED',
       });
     } catch (e) {
