@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/mappers/monitoring_data.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_analysis_controller.dart';
+import 'package:mobile_preven_ia_app/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/screens/home/widgets/clinical_results.dart';
+import 'package:mobile_preven_ia_app/screens/monitoring-history/widgets/glucose_chart.dart';
+import 'package:mobile_preven_ia_app/screens/monitoring-history/widgets/ldl_chart.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_error.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_loader.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
@@ -10,12 +14,22 @@ import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
 class MonitoringHistoryScreen extends ConsumerWidget {
   const MonitoringHistoryScreen({super.key});
 
+  Future<Map<String, dynamic>> _getHistoricData(WidgetRef ref) async {
+    final analyses =
+        await ref.read(fireStorageAnalysisControllerProvider.future);
+    final monitoredValues = await ref
+        .read(fireStorageAnalysisControllerProvider.notifier)
+        .getGlucoseAndLDLValuesByDate();
+    return {
+      'analyses': analyses,
+      'monitoredValues': monitoredValues,
+    };
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return FutureBuilder(
-      future: ref
-          .read(fireStorageAnalysisControllerProvider.notifier)
-          .getUserAnalyses(),
+      future: _getHistoricData(ref),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const PviLoader();
@@ -24,6 +38,11 @@ class MonitoringHistoryScreen extends ConsumerWidget {
             customMessage: 'Error al cargar datos: ${snapshot.error}',
           );
         } else if (snapshot.hasData) {
+          final data = snapshot.data!;
+          final List<MonitoringData> monitoredValues =
+              data['monitoredValues'] as List<MonitoringData>;
+          final analyses = data['analyses'] as List<Map<String, dynamic>>?;
+
           return SafeArea(
             child: Scaffold(
               extendBody: true,
@@ -40,6 +59,18 @@ class MonitoringHistoryScreen extends ConsumerWidget {
                         text: 'Historial de monitoreo',
                         style: AppFonts.headline2,
                       ),
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.5,
+                        child: CarouselView(
+                          backgroundColor: AppColors.gray4,
+                          scrollDirection: Axis.horizontal,
+                          itemExtent: double.infinity,
+                          children: [
+                            GlucoseChart(data: monitoredValues),
+                            LDLChart(data: monitoredValues),
+                          ],
+                        ),
+                      ),
                       Visibility(
                         visible: snapshot.data!.isNotEmpty,
                         child: PviText(
@@ -47,10 +78,10 @@ class MonitoringHistoryScreen extends ConsumerWidget {
                           style: AppFonts.headline3,
                         ),
                       ),
-                      if (snapshot.data!.isNotEmpty)
-                        ...snapshot.data!.map(
+                      if (analyses != null && analyses.isNotEmpty)
+                        ...analyses.map(
                             (analysis) => ClinicalResults(analysis: analysis)),
-                      if (snapshot.data!.isEmpty)
+                      if (analyses != null && analyses.isEmpty)
                         PviText(
                           textAlign: TextAlign.center,
                           text:

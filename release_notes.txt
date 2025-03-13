@@ -1,10 +1,8 @@
 Version: 1.0.0
-Build: 4
+Build: 5
 
 Changes in this build:
--Sessions Added
--Profile Added
--Clinical History Added
--Health values to monitoring (charts) added on sign in
--Charts coming soon
--Change password coming soon
+- Charts for selected values monitoring
+- Change password coming soon
+- Change profile photo coming soon
+- Update weight coming soon
