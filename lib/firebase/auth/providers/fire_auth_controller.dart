@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mobile_preven_ia_app/firebase/auth/providers/fire_auth_repository_provider.dart';
 import 'package:mobile_preven_ia_app/firebase/classes/session_info.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -9,58 +10,89 @@ part 'fire_auth_controller.g.dart';
 class FireAuthController extends _$FireAuthController {
   @override
   Future<SessionInfo?> build() async {
+    // Listen to auth state changes
+    FirebaseAuth.instance.authStateChanges().listen((User? user) async {
+      if (user != null) {
+        final sessionInfo = await SessionInfo.fromFirestore(user);
+        state = AsyncValue.data(sessionInfo);
+      } else {
+        state = const AsyncValue.data(null);
+      }
+    });
+
+    // Return current session if exists
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      return SessionInfo.fromFirestore(currentUser);
+    }
     return null;
   }
 
+  /// Sign in with email and password
   Future<SessionInfo?> signInWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
     try {
+      state = const AsyncValue.loading();
       final loginResult = await ref
           .read(fireAuthRepositoryProvider)
           .signInWithEmailAndPassword(email: email, password: password);
+
+      // Update last login
+      if (loginResult != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(loginResult.user.uid)
+            .update({'last_login': FieldValue.serverTimestamp()});
+      }
+
       state = AsyncValue.data(loginResult);
       return loginResult;
     } catch (error) {
+      state = AsyncValue.error(error, StackTrace.current);
       rethrow;
     }
   }
 
+  /// Sign out the current user
   Future<void> signOut() async {
     try {
+      state = const AsyncValue.loading();
       await ref.read(fireAuthRepositoryProvider).signOut();
+      state = const AsyncValue.data(null);
     } catch (error) {
+      state = AsyncValue.error(error, StackTrace.current);
       rethrow;
     }
   }
 
-  // Updated register function returning a LoginResult.
+  /// Register with email and password
   Future<SessionInfo?> registerWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
     try {
+      state = const AsyncValue.loading();
       final user = await ref
           .read(fireAuthRepositoryProvider)
           .registerWithEmailAndPassword(email: email, password: password);
-      if (user == null) return null;
 
-      final uid = user.uid;
-      // Retrieve the user's Firestore document to get the "next_step" value.
-      final docSnapshot =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      final data = docSnapshot.data();
-      final nextStep = data?['next_step'] ?? 'HEALTH_INFO';
+      if (user == null) {
+        state = const AsyncValue.data(null);
+        return null;
+      }
 
-      final loginResult = SessionInfo(user: user, nextStep: nextStep);
-      state = AsyncValue.data(loginResult);
-      return loginResult;
+      final sessionInfo = await SessionInfo.fromFirestore(user);
+      state = AsyncValue.data(sessionInfo);
+      return sessionInfo;
     } catch (error) {
+      state = AsyncValue.error(error, StackTrace.current);
       rethrow;
     }
   }
 
+  /// Complete health form and update user profile
   Future<void> completeHealthForm({
     required String uid,
     required String name,
@@ -78,6 +110,7 @@ class FireAuthController extends _$FireAuthController {
     required bool monitorIMC,
   }) async {
     try {
+      state = const AsyncValue.loading();
       await ref.read(fireAuthRepositoryProvider).completeHealthForm(
             uid: uid,
             name: name,
@@ -94,8 +127,26 @@ class FireAuthController extends _$FireAuthController {
             monitorGlucose: monitorGlucose,
             monitorIMC: monitorIMC,
           );
+
+      // Refresh session info after profile update
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        final sessionInfo = await SessionInfo.fromFirestore(currentUser);
+        state = AsyncValue.data(sessionInfo);
+      }
     } catch (error) {
+      state = AsyncValue.error(error, StackTrace.current);
       rethrow;
     }
   }
+
+  /// Check if user is logged in
+  bool get isLoggedIn => state.value != null;
+
+  /// Get current user data
+  SessionInfo? get currentSession => state.value;
+
+  /// Check if user needs to complete profile
+  bool get needsProfileCompletion =>
+      state.value?.needsProfileCompletion ?? true;
 }

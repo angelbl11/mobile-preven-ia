@@ -4,9 +4,11 @@ import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_ana
 import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_user_controller.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/screens/home/widgets/clinical_results.dart';
+import 'package:mobile_preven_ia_app/screens/profile/profile_screen.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_error.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_loader.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -57,10 +59,20 @@ class HomeScreen extends ConsumerWidget {
                       Row(
                         spacing: 16,
                         children: [
-                          const CircleAvatar(
-                            radius: 28,
-                            backgroundImage:
-                                NetworkImage('https://i.pravatar.cc/300'),
+                          InkWell(
+                            onTap: () =>
+                                PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: const ProfileScreen(),
+                              withNavBar: false,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.fade,
+                            ),
+                            child: const CircleAvatar(
+                              radius: 28,
+                              backgroundImage:
+                                  NetworkImage('https://i.pravatar.cc/300'),
+                            ),
                           ),
                           PviText(
                             text: '¡Hola, ${userProfile.name}!',

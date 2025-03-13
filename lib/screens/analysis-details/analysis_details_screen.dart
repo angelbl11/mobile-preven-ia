@@ -197,8 +197,8 @@ class _AnalysisDetailsScreenState extends ConsumerState<AnalysisDetailsScreen>
                     child: PviText(
                         text: 'Entendido',
                         style: AppFonts.body2.copyWith(color: Colors.white)),
-                    onPressed: () => Navigator.restorablePushReplacementNamed(
-                        context, '/home'),
+                    onPressed: () =>
+                        Navigator.restorablePushReplacementNamed(context, '/'),
                   ),
                 ),
               ],

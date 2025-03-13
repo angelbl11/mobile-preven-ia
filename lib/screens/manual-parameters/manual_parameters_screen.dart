@@ -20,8 +20,7 @@ class _ManualParametersScreenState extends State<ManualParametersScreen> {
   final Map<String, TextEditingController> _controllers = {};
   Map<String, String?> _errors = {};
   bool _isFormValid = false;
-  bool _hasSubmitted =
-      false; // Bandera para controlar si se ha intentado submit
+  bool _hasSubmitted = false;
 
   final Map<String, String> formattedLabels = {
     "ldl": "LDL (mg/dL)",
@@ -53,7 +52,6 @@ class _ManualParametersScreenState extends State<ManualParametersScreen> {
       for (var param in missingParams) {
         if (!_controllers.containsKey(param)) {
           _controllers[param] = TextEditingController();
-          // Se agrega el listener para actualizar la validez del formulario.
           _controllers[param]!.addListener(_validateForm);
         }
         _errors[param] = null;
@@ -70,7 +68,6 @@ class _ManualParametersScreenState extends State<ManualParametersScreen> {
     super.dispose();
   }
 
-  // Actualiza la validez y, si ya se intentó submit, los errores.
   void _validateForm() {
     bool valid = true;
     final Map<String, String?> newErrors = {};
@@ -100,7 +97,6 @@ class _ManualParametersScreenState extends State<ManualParametersScreen> {
     });
     _validateForm();
     if (!_isFormValid) {
-      // Se detiene el submit y se muestran errores.
       return;
     }
     final Map<String, String> parameterValues = {};
@@ -141,13 +137,11 @@ class _ManualParametersScreenState extends State<ManualParametersScreen> {
                 style: AppFonts.subtitle2,
               ),
               const SizedBox(height: 16),
-              // Genera un PviTextInput para cada parámetro.
               ...missingParams.map(
                 (param) => PviTextInput(
                   controller: _controllers[param],
                   label: formattedLabels[param] ?? param,
                   errorText: _errors[param],
-                  // Aunque se actualiza la validez en cada cambio, los errores solo se muestran tras el submit.
                   onChanged: (_) => _validateForm(),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
@@ -157,7 +151,6 @@ class _ManualParametersScreenState extends State<ManualParametersScreen> {
                 width: double.infinity,
                 height: 56,
                 child: PviButton(
-                  // Se deshabilita el botón si el formulario no es válido.
                   onPressed: _isFormValid ? _submitParameters : null,
                   child: PviText(
                     text: "Actualizar parámetros",
