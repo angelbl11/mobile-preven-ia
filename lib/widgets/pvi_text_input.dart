@@ -18,6 +18,10 @@ class PviTextInput extends StatelessWidget {
   final VoidCallback? onTap;
   final bool readOnly;
   final void Function(String)? onFieldSubmitted;
+  final InputBorder? border;
+  final InputBorder? focusedBorder;
+  final InputBorder? enabledBorder;
+  final InputBorder? errorBorder;
   const PviTextInput({
     super.key,
     this.onChanged,
@@ -34,6 +38,10 @@ class PviTextInput extends StatelessWidget {
     this.onTap,
     this.readOnly = false,
     this.onFieldSubmitted,
+    this.border,
+    this.focusedBorder,
+    this.enabledBorder,
+    this.errorBorder,
   });
 
   @override
@@ -61,21 +69,25 @@ class PviTextInput extends StatelessWidget {
                     .copyWith(fontSize: 14, color: AppColors.gray3),
               )
             : null,
-        border: OutlineInputBorder(
-          borderSide: BorderSide.none,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide.none,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide.none,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        errorBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.error),
-        ),
+        border: border ??
+            OutlineInputBorder(
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(12),
+            ),
+        focusedBorder: focusedBorder ??
+            OutlineInputBorder(
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(12),
+            ),
+        enabledBorder: enabledBorder ??
+            OutlineInputBorder(
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(12),
+            ),
+        errorBorder: errorBorder ??
+            const OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.error),
+            ),
         errorText: errorText,
         errorStyle: AppFonts.caption.copyWith(
           color: AppColors.error,

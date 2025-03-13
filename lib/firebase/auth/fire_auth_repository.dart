@@ -73,7 +73,7 @@ class FireAuthRepository {
     required bool isGeneticRiskHypertension,
     required bool monitorLDL,
     required bool monitorGlucose,
-    required bool monitorIMC,
+    required bool monitorWeight,
   }) async {
     try {
       // Optionally update the user's display name.
@@ -96,7 +96,7 @@ class FireAuthRepository {
         'is_genetic_risk_hypertension': isGeneticRiskHypertension,
         'monitor_ldl': monitorLDL,
         'monitor_glucose': monitorGlucose,
-        'monitor_imc': monitorIMC,
+        'monitor_weight': monitorWeight,
         'next_step': 'COMPLETED',
       });
     } catch (e) {
@@ -107,5 +107,31 @@ class FireAuthRepository {
   // Sign out remains unchanged.
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
+  }
+
+  Future<void> changePassword(
+      String newPassword, String currentPassword) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      throw Exception("No hay usuario autenticado");
+    }
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+    try {
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(newPassword);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> resetPassword(String email) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      rethrow;
+    }
   }
 }

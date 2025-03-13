@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_preven_ia_app/firebase/auth/providers/fire_auth_controller.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
+import 'package:mobile_preven_ia_app/screens/forgot-password/forgot_password_screen.dart';
 import 'package:mobile_preven_ia_app/screens/health-info/health_info_screen.dart';
 import 'package:mobile_preven_ia_app/screens/navigation-handler/navigation_handler_screen.dart';
 import 'package:mobile_preven_ia_app/screens/profile/profile_screen.dart';
 import 'package:mobile_preven_ia_app/screens/sign-in/sign_in_screen.dart';
+import 'package:mobile_preven_ia_app/screens/sign-up/sign_up_screen.dart';
+import 'package:mobile_preven_ia_app/screens/verify-email/verify_email_screen.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_error.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_loader.dart';
 
@@ -20,6 +23,9 @@ class App extends ConsumerWidget {
       routes: {
         '/profile': (_) => const ProfileScreen(),
         '/login': (_) => const SignInScreen(),
+        '/verify': (_) => const VerifyEmailScreen(),
+        '/forgot-password': (_) => const ForgotPasswordScreen(),
+        '/sign-up': (_) => const SignUpScreen(),
       },
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.background,
@@ -41,7 +47,7 @@ class AuthStateHandler extends ConsumerWidget {
           return const SignInScreen();
         }
 
-        if (session.needsProfileCompletion) {
+        if (session.nextStep == 'HEALTH_INFO') {
           return const HealthInfoScreen();
         }
 

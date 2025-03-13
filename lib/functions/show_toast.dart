@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mobile_preven_ia_app/classes/message_status.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
@@ -13,8 +14,17 @@ void showToast({
   String? customTitle,
 }) {
   toastification.show(
+    icon: Icon(
+      size: 25,
+      status.type == ToastificationType.error
+          ? LucideIcons.circleX
+          : status.type == ToastificationType.success
+              ? LucideIcons.circleCheck
+              : LucideIcons.info,
+      color: status.primaryColor,
+    ),
     context: context,
-    style: ToastificationStyle.fillColored,
+    style: ToastificationStyle.minimal,
     autoCloseDuration: const Duration(seconds: 5),
     type: status.type,
     alignment: Alignment.bottomLeft,

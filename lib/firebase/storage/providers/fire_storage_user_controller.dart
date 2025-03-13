@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:mobile_preven_ia_app/firebase/auth/providers/fire_auth_controller.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/classes/user_profile.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_repository_provider.dart';
@@ -17,5 +19,27 @@ class FireStorageUserController extends _$FireStorageUserController {
     final userProfile =
         await ref.read(fireStorageRepositoryProvider).getUserProfile(uid ?? '');
     return userProfile;
+  }
+
+  Future<void> updateUserWeight(double newWeight) {
+    final uid = ref.read(fireAuthControllerProvider).value?.user.uid;
+    try {
+      return ref
+          .read(fireStorageRepositoryProvider)
+          .updateUserWeight(uid ?? '', newWeight);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateProfilePicture(File profilePicture) {
+    final uid = ref.read(fireAuthControllerProvider).value?.user.uid;
+    try {
+      return ref
+          .read(fireStorageRepositoryProvider)
+          .updateProfilePicture(uid ?? '', profilePicture);
+    } catch (e) {
+      rethrow;
+    }
   }
 }

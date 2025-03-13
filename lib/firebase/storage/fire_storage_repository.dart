@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/classes/user_profile.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/mappers/monitoring_data.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/mappers/weight_history.dart';
 import 'package:mobile_preven_ia_app/utils/sanitize_json.dart';
 
 class FireStorageRepository {
@@ -149,5 +152,71 @@ class FireStorageRepository {
         .toList();
 
     return mappedRes;
+  }
+
+  Future<void> updateUserWeight(String uid, double newWeight) async {
+    try {
+      final userProfile = await getUserProfile(uid);
+      if (userProfile == null) {
+        throw Exception("Usuario no encontrado");
+      }
+      final double height = userProfile.height;
+      if (height <= 0) {
+        throw Exception(
+            "La altura del usuario no es válida para calcular el IMC");
+      }
+      final double newBMI = newWeight / (height * height);
+      await _firestore.collection('users').doc(uid).update({
+        'weight': newWeight,
+        'bmi': newBMI,
+      });
+      final weightHistoryRef = _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('weight_history')
+          .doc();
+      await weightHistoryRef.set({
+        'id': weightHistoryRef.id,
+        'weight': newWeight,
+        'bmi': newBMI,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<WeightHistory>> getUserWeightHistory(String uid) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('weight_history')
+          .orderBy('created_at', descending: false)
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => WeightHistory.fromMap(doc.data()))
+          .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateProfilePicture(String uid, File newProfilePicture) async {
+    try {
+      final storageRef =
+          FirebaseStorage.instance.ref().child('profile_images/$uid.jpg');
+
+      await storageRef.putFile(newProfilePicture);
+
+      final imageUrl = await storageRef.getDownloadURL();
+
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'photoUrl': imageUrl,
+      });
+    } catch (e) {
+      rethrow;
+    }
   }
 }
