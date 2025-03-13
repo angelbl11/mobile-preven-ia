@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_button.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
 
 /// YFErrorWidget
@@ -54,14 +53,6 @@ class PviError extends ConsumerWidget {
                   'Lo sentimos, pero no puedes realizar esta acción en este momento.',
               style: AppFonts.caption,
               textAlign: TextAlign.center,
-            ),
-            const Spacer(),
-            PviButton(
-              onPressed: onClose,
-              child: PviText(
-                text: 'Cerrar',
-                style: AppFonts.button1.copyWith(color: AppColors.background),
-              ),
             ),
           ],
         ),

@@ -107,7 +107,7 @@ class FireAuthController extends _$FireAuthController {
     required bool isGeneticRiskHypertension,
     required bool monitorLDL,
     required bool monitorGlucose,
-    required bool monitorIMC,
+    required bool monitorWeight,
   }) async {
     try {
       state = const AsyncValue.loading();
@@ -125,7 +125,7 @@ class FireAuthController extends _$FireAuthController {
             isGeneticRiskHypertension: isGeneticRiskHypertension,
             monitorLDL: monitorLDL,
             monitorGlucose: monitorGlucose,
-            monitorIMC: monitorIMC,
+            monitorWeight: monitorWeight,
           );
 
       // Refresh session info after profile update
@@ -134,6 +134,32 @@ class FireAuthController extends _$FireAuthController {
         final sessionInfo = await SessionInfo.fromFirestore(currentUser);
         state = AsyncValue.data(sessionInfo);
       }
+    } catch (error) {
+      state = AsyncValue.error(error, StackTrace.current);
+      rethrow;
+    }
+  }
+
+  Future<void> changePassword(
+      String currentPassword, String newPassword) async {
+    try {
+      state = const AsyncValue.loading();
+      await ref
+          .read(fireAuthRepositoryProvider)
+          .changePassword(newPassword, currentPassword);
+      await ref.read(fireAuthRepositoryProvider).signOut();
+      state = const AsyncValue.data(null);
+    } catch (error) {
+      state = AsyncValue.error(error, StackTrace.current);
+      rethrow;
+    }
+  }
+
+  Future<void> resetPassword(String email) async {
+    try {
+      state = const AsyncValue.loading();
+      await ref.read(fireAuthRepositoryProvider).resetPassword(email);
+      state = const AsyncValue.data(null);
     } catch (error) {
       state = AsyncValue.error(error, StackTrace.current);
       rethrow;

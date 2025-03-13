@@ -11,6 +11,10 @@ class UserProfile {
   final String name;
   final String nextStep;
   final double weight;
+  final bool monitorGlucose;
+  final bool monitorLdl;
+  final bool monitorWeight;
+  final String? photoUrl;
 
   UserProfile({
     required this.birthDate,
@@ -25,6 +29,10 @@ class UserProfile {
     required this.name,
     required this.nextStep,
     required this.weight,
+    required this.monitorGlucose,
+    required this.monitorLdl,
+    required this.monitorWeight,
+    this.photoUrl,
   });
 
   factory UserProfile.fromMap(Map<String, dynamic> map) {
@@ -42,6 +50,10 @@ class UserProfile {
       name: map['name'] as String? ?? '',
       nextStep: map['next_step'] as String? ?? '',
       weight: (map['weight'] as num?)?.toDouble() ?? 0.0,
+      monitorGlucose: map['monitor_glucose'] as bool? ?? false,
+      monitorLdl: map['monitor_ldl'] as bool? ?? false,
+      monitorWeight: map['monitor_weight'] as bool? ?? false,
+      photoUrl: map['photo_url'] as String?,
     );
   }
 
@@ -59,6 +71,10 @@ class UserProfile {
       'name': name,
       'next_step': nextStep,
       'weight': weight,
+      'monitor_glucose': monitorGlucose,
+      'monitor_ldl': monitorLdl,
+      'monitor_weight': monitorWeight,
+      'photo_url': photoUrl,
     };
   }
 }

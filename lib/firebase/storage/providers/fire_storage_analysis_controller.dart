@@ -1,5 +1,6 @@
 import 'package:mobile_preven_ia_app/firebase/auth/providers/fire_auth_controller.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/mappers/monitoring_data.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/mappers/weight_history.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_repository_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -41,5 +42,12 @@ class FireStorageAnalysisController extends _$FireStorageAnalysisController {
         .read(fireStorageRepositoryProvider)
         .getGlucoseAndLDLValuesByDate(uid);
     return glucoseAndLDLValues;
+  }
+
+  Future<List<WeightHistory>> getWeightHistory() async {
+    final uid = ref.read(fireAuthControllerProvider).value?.user.uid ?? '';
+    final weightHistory =
+        await ref.read(fireStorageRepositoryProvider).getUserWeightHistory(uid);
+    return weightHistory;
   }
 }

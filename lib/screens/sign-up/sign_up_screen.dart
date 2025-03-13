@@ -152,6 +152,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Ingresa una contraseña';
+                        } else if (value.length < 6) {
+                          return 'La contraseña debe tener al menos 6 caracteres';
                         }
                         return null;
                       },

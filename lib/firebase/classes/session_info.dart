@@ -79,7 +79,7 @@ class SessionInfo {
     return {
       'ldl': userData?['monitor_ldl'] ?? false,
       'glucose': userData?['monitor_glucose'] ?? false,
-      'bmi': userData?['monitor_imc'] ?? false,
+      'weight': userData?['monitor_weight'] ?? false,
     };
   }
 }

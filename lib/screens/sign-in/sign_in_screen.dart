@@ -74,7 +74,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           if (step == 'HEALTH_INFO') {
             Navigator.pushNamed(context, '/health-info');
           } else {
-            Navigator.pushNamed(context, '/home');
+            Navigator.pushNamed(context, '/');
           }
         },
       );
@@ -151,9 +151,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: PviTextButton(
-                        onPressed: () {
-                          // Optionally navigate to forgot password screen.
-                        },
+                        onPressed: () =>
+                            Navigator.of(context).pushNamed('/forgot-password'),
                         text: '¿Olvidaste tu contraseña?',
                       ),
                     ),

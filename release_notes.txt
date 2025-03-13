@@ -1,8 +1,9 @@
 Version: 1.0.0
-Build: 5
+Build: 6
 
 Changes in this build:
-- Charts for selected values monitoring
-- Change password coming soon
-- Change profile photo coming soon
-- Update weight coming soon
+-Change password added
+-Forgot password added
+-Update profile photo added
+-Bug fixes
+-Charts logic for health params added

@@ -40,7 +40,7 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
   bool _hasObesity = false;
   bool _monitorLDL = false;
   bool _monitorGlucose = false;
-  bool _monitorIMC = false;
+  bool _monitorWeight = false;
 
   final List<bool> _selectedGender = [false, false];
 
@@ -131,7 +131,7 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
       final hasObesity = _hasObesity;
       final monitorLDL = _monitorLDL;
       final monitorGlucose = _monitorGlucose;
-      final monitorIMC = _monitorIMC;
+      final monitorWeight = _monitorWeight;
       await StatusHandlerFunction.handleStatus(
         context: context,
         action: ref
@@ -150,7 +150,7 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
               isGeneticRiskObesity: hasObesity,
               monitorLDL: monitorLDL,
               monitorGlucose: monitorGlucose,
-              monitorIMC: monitorIMC,
+              monitorWeight: monitorWeight,
             ),
         onSuccessCallBack: () {
           showToast(
@@ -530,15 +530,15 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
                               Checkbox(
                                 activeColor: AppColors.primary,
                                 checkColor: Colors.white,
-                                value: _monitorIMC,
+                                value: _monitorWeight,
                                 onChanged: (value) {
                                   setState(() {
-                                    _monitorIMC = value ?? false;
+                                    _monitorWeight = value ?? false;
                                   });
                                 },
                               ),
                               PviText(
-                                text: 'Relación peso/estatura (IMC)',
+                                text: 'Peso (kg)',
                                 style: AppFonts.body1,
                               ),
                             ],
