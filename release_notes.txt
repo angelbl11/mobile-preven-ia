@@ -1,9 +1,5 @@
 Version: 1.0.0
-Build: 6
+Build: 7
 
 Changes in this build:
--Change password added
--Forgot password added
--Update profile photo added
--Bug fixes
--Charts logic for health params added
+-Session fixes
