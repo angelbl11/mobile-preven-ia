@@ -50,43 +50,48 @@ class ProcessInfoController extends _$ProcessInfoController {
 
   Future<Map<String, dynamic>?> analyzeTextWithoutModel(
       String plainText) async {
-    final gemini = Gemini.instance;
-    final extractionResponse = await gemini.prompt(
-      parts: [
-        Part.text(extractionPrompt),
-        Part.text(plainText),
-      ],
-    );
+    try {
+      final gemini = Gemini.instance;
+      final extractionResponse = await gemini.prompt(
+        parts: [
+          Part.text(extractionPrompt),
+          Part.text(plainText),
+        ],
+      );
 
-    final userProfile =
-        await ref.read(fireStorageUserControllerProvider.future);
+      final userProfile =
+          await ref.read(fireStorageUserControllerProvider.future);
 
-    int age = 0;
-    final birthDate = _parseBirthDate(userProfile?.birthDate);
-    if (birthDate != null) {
-      age = _calculateAge(birthDate);
-    }
+      int age = 0;
+      final birthDate = _parseBirthDate(userProfile?.birthDate);
+      if (birthDate != null) {
+        age = _calculateAge(birthDate);
+      }
 
-    final modifiedAnalyzePrompt = analyzeWithoutModelPrompt
-        .replaceAll('valor_de_IMC', userProfile?.bmi.toString() ?? '0')
-        .replaceAll('valor_de_sexo', parseGender(userProfile?.gender ?? 'M'))
-        .replaceAll('valor_de_edad', age.toString());
+      final modifiedAnalyzePrompt = analyzeWithoutModelPrompt
+          .replaceAll('valor_de_IMC', userProfile?.bmi.toString() ?? '0')
+          .replaceAll('valor_de_sexo', parseGender(userProfile?.gender ?? 'M'))
+          .replaceAll('valor_de_edad', age.toString());
 
-    final analysisResponse = await gemini.prompt(
-      parts: [
-        Part.text(modifiedAnalyzePrompt),
-        Part.text(extractionResponse?.output ?? ''),
-      ],
-    );
+      final analysisResponse = await gemini.prompt(
+        parts: [
+          Part.text(modifiedAnalyzePrompt),
+          Part.text(extractionResponse?.output ?? ''),
+        ],
+      );
 
-    final analysisOutput = analysisResponse?.output;
-    final currentUser = ref.read(fireAuthControllerProvider).value?.user;
-    if (analysisOutput != null && currentUser != null) {
-      final persistedAnalysis = await ref
-          .read(fireStorageAnalysisControllerProvider.notifier)
-          .createUserAnalysis(currentUser.uid, analysisOutput);
-      state = AsyncData(persistedAnalysis);
-      return persistedAnalysis;
+      final analysisOutput = analysisResponse?.output;
+      final currentUser = ref.read(fireAuthControllerProvider).value?.user;
+      if (analysisOutput != null && currentUser != null) {
+        final persistedAnalysis = await ref
+            .read(fireStorageAnalysisControllerProvider.notifier)
+            .createUserAnalysis(currentUser.uid, analysisOutput);
+        state = AsyncData(persistedAnalysis);
+        return persistedAnalysis;
+      }
+    } catch (e) {
+      print('Error: $e');
+      rethrow;
     }
 
     return null;
@@ -119,123 +124,128 @@ class ProcessInfoController extends _$ProcessInfoController {
     String plainText,
     Map<String, String> parameterValues,
   ) async {
-    final gemini = Gemini.instance;
+    try {
+      final gemini = Gemini.instance;
 
-    final extractionResponse = await gemini.prompt(
-      parts: [
-        Part.text(extractionPrompt),
-        Part.text(plainText),
-      ],
-    );
+      final extractionResponse = await gemini.prompt(
+        parts: [
+          Part.text(extractionPrompt),
+          Part.text(plainText),
+        ],
+      );
 
-    Map<String, dynamic> extractedData = {};
-    if (extractionResponse?.output != null) {
-      final sanitizedOutput = sanitizeJson(extractionResponse?.output ?? '');
-      try {
-        extractedData = json.decode(sanitizedOutput) as Map<String, dynamic>;
-      } catch (e) {
-        extractedData = {};
+      Map<String, dynamic> extractedData = {};
+      if (extractionResponse?.output != null) {
+        final sanitizedOutput = sanitizeJson(extractionResponse?.output ?? '');
+        try {
+          extractedData = json.decode(sanitizedOutput) as Map<String, dynamic>;
+        } catch (e) {
+          extractedData = {};
+        }
       }
-    }
 
-    final exams = extractedData;
+      final exams = extractedData;
 
-    final userProfile =
-        await ref.read(fireStorageUserControllerProvider.future);
+      final userProfile =
+          await ref.read(fireStorageUserControllerProvider.future);
 
-    int age = 0;
-    final birthDate = _parseBirthDate(userProfile?.birthDate);
-    if (birthDate != null) {
-      age = _calculateAge(birthDate);
-    }
+      int age = 0;
+      final birthDate = _parseBirthDate(userProfile?.birthDate);
+      if (birthDate != null) {
+        age = _calculateAge(birthDate);
+      }
 
-    final finalLDL =
-        _getValueFromExamMultiple(exams, ['ldl', 'colesterol ldl directo']) ??
-            num.parse(parameterValues['ldl'] ?? '0').toDouble();
-    final finalTriglycerides =
-        _getValueFromExamMultiple(exams, ['trigliceridos', 'triglicéridos']) ??
-            num.parse(parameterValues['triglicéridos'] ?? '0').toDouble();
-    final finalFastingGlucose =
-        _getValueFromExamMultiple(exams, ['glucosa en ayunas', 'glucosa']) ??
-            num.parse(parameterValues['glucosa'] ?? '0').toDouble();
-    final finalCreatinine = _getValueFromExamMultiple(exams, ['creatinina']) ??
-        num.parse(parameterValues['creatinina'] ?? '0').toDouble();
-    final finalSystolicPressure =
-        _getValueFromExamMultiple(exams, ['presión arterial sistólica']) ??
-            num.parse(parameterValues['presión arterial sistólica'] ?? '0')
-                .toDouble();
-    final finalDiastolicPressure =
-        _getValueFromExamMultiple(exams, ['presión arterial diastólica']) ??
-            num.parse(parameterValues['presión arterial diastólica'] ?? '0')
-                .toDouble();
+      final finalLDL =
+          _getValueFromExamMultiple(exams, ['ldl', 'colesterol ldl directo']) ??
+              num.parse(parameterValues['ldl'] ?? '0').toDouble();
+      final finalTriglycerides = _getValueFromExamMultiple(
+              exams, ['trigliceridos', 'triglicéridos']) ??
+          num.parse(parameterValues['triglicéridos'] ?? '0').toDouble();
+      final finalFastingGlucose =
+          _getValueFromExamMultiple(exams, ['glucosa en ayunas', 'glucosa']) ??
+              num.parse(parameterValues['glucosa'] ?? '0').toDouble();
+      final finalCreatinine =
+          _getValueFromExamMultiple(exams, ['creatinina']) ??
+              num.parse(parameterValues['creatinina'] ?? '0').toDouble();
+      final finalSystolicPressure =
+          _getValueFromExamMultiple(exams, ['presión arterial sistólica']) ??
+              num.parse(parameterValues['presión arterial sistólica'] ?? '0')
+                  .toDouble();
+      final finalDiastolicPressure =
+          _getValueFromExamMultiple(exams, ['presión arterial diastólica']) ??
+              num.parse(parameterValues['presión arterial diastólica'] ?? '0')
+                  .toDouble();
 
-    final finalHbA1c = _getValueFromExamMultiple(exams, ['hba1c']) ??
-        num.parse(parameterValues['hba1c'] ?? '0').toDouble();
+      final finalHbA1c = _getValueFromExamMultiple(exams, ['hba1c']) ??
+          num.parse(parameterValues['hba1c'] ?? '0').toDouble();
 
-    // Llamadas a los modelos premium:
-    final obesityPrediction =
-        await ref.read(apiControllerProvider.notifier).getObesityPrediction(
-              userProfile?.bmi ?? 0,
-              finalLDL,
-              finalTriglycerides,
-              userProfile?.gender ?? 'male',
-              age,
-              userProfile?.isGeneticRiskObesity ?? false,
-            );
+      // Llamadas a los modelos premium:
+      final obesityPrediction =
+          await ref.read(apiControllerProvider.notifier).getObesityPrediction(
+                userProfile?.bmi ?? 0,
+                finalLDL,
+                finalTriglycerides,
+                userProfile?.gender ?? 'male',
+                age,
+                userProfile?.isGeneticRiskObesity ?? false,
+              );
 
-    final diabetesPrediction =
-        await ref.read(apiControllerProvider.notifier).getDiabetesPrediction(
-              finalFastingGlucose,
-              finalHbA1c,
-              userProfile?.isGeneticRiskDiabetes ?? false,
-              userProfile?.gender ?? 'male',
-              age,
-              userProfile?.bmi ?? 0,
-            );
+      final diabetesPrediction =
+          await ref.read(apiControllerProvider.notifier).getDiabetesPrediction(
+                finalFastingGlucose,
+                finalHbA1c,
+                userProfile?.isGeneticRiskDiabetes ?? false,
+                userProfile?.gender ?? 'male',
+                age,
+                userProfile?.bmi ?? 0,
+              );
 
-    final hypertensionPrediction = await ref
-        .read(apiControllerProvider.notifier)
-        .getHypertensionPrediction(
-          finalSystolicPressure,
-          finalDiastolicPressure,
-          finalCreatinine,
-          finalLDL,
-          userProfile?.isGeneticRiskHypertension ?? false,
-          userProfile?.gender ?? 'male',
-          age,
-          userProfile?.bmi ?? 0,
-        );
+      final hypertensionPrediction = await ref
+          .read(apiControllerProvider.notifier)
+          .getHypertensionPrediction(
+            finalSystolicPressure,
+            finalDiastolicPressure,
+            finalCreatinine,
+            finalLDL,
+            userProfile?.isGeneticRiskHypertension ?? false,
+            userProfile?.gender ?? 'male',
+            age,
+            userProfile?.bmi ?? 0,
+          );
 
-    final predictionsMap = {
-      "obesidad": obesityPrediction.toJson(),
-      "diabetes": diabetesPrediction.toJson(),
-      "hipertension": hypertensionPrediction.toJson(),
-    };
+      final predictionsMap = {
+        "obesidad": obesityPrediction.toJson(),
+        "diabetes": diabetesPrediction.toJson(),
+        "hipertension": hypertensionPrediction.toJson(),
+      };
 
-    final predictionsJson = json.encode(predictionsMap);
+      final predictionsJson = json.encode(predictionsMap);
 
-    final modifiedAnalyzePrompt = analyzeWithModelPrompt
-        .replaceAll('valor_de_IMC', userProfile?.bmi.toString() ?? '0')
-        .replaceAll('valor_de_sexo', parseGender(userProfile?.gender ?? 'M'))
-        .replaceAll('valor_de_edad', age.toString());
+      final modifiedAnalyzePrompt = analyzeWithModelPrompt
+          .replaceAll('valor_de_IMC', userProfile?.bmi.toString() ?? '0')
+          .replaceAll('valor_de_sexo', parseGender(userProfile?.gender ?? 'M'))
+          .replaceAll('valor_de_edad', age.toString());
 
-    final analysisResponse = await gemini.prompt(
-      parts: [
-        Part.text(modifiedAnalyzePrompt),
-        Part.text(plainText),
-        Part.text(predictionsJson),
-      ],
-    );
+      final analysisResponse = await gemini.prompt(
+        parts: [
+          Part.text(modifiedAnalyzePrompt),
+          Part.text(plainText),
+          Part.text(predictionsJson),
+        ],
+      );
 
-    final analysisOutput = analysisResponse?.output;
-    final currentUser = ref.read(fireAuthControllerProvider).value?.user;
-    if (analysisOutput != null && currentUser != null) {
-      final persistedAnalysis = await ref
-          .read(fireStorageAnalysisControllerProvider.notifier)
-          .createUserAnalysis(currentUser.uid, analysisOutput);
+      final analysisOutput = analysisResponse?.output;
+      final currentUser = ref.read(fireAuthControllerProvider).value?.user;
+      if (analysisOutput != null && currentUser != null) {
+        final persistedAnalysis = await ref
+            .read(fireStorageAnalysisControllerProvider.notifier)
+            .createUserAnalysis(currentUser.uid, analysisOutput);
 
-      state = AsyncData(persistedAnalysis);
-      return persistedAnalysis;
+        state = AsyncData(persistedAnalysis);
+        return persistedAnalysis;
+      }
+    } catch (e) {
+      rethrow;
     }
 
     return null;

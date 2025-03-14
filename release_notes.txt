@@ -1,6 +1,4 @@
 Version: 1.0.0
-Build: 8
+Build: 9
 
 Changes in this build:
--Update profile photo added
--Session errors fixed
