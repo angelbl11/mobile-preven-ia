@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/classes/user_profile.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_analysis_controller.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_user_controller.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
@@ -17,9 +18,9 @@ class HomeScreen extends ConsumerWidget {
 
   Future<Map<String, dynamic>> _getUserData(WidgetRef ref) async {
     final userProfile =
-        await ref.watch(fireStorageUserControllerProvider.future);
+        await ref.read(fireStorageUserControllerProvider.future);
     final analyses = await ref
-        .watch(fireStorageAnalysisControllerProvider.notifier)
+        .read(fireStorageAnalysisControllerProvider.notifier)
         .getUserAnalyses();
     return {
       'profile': userProfile,
@@ -39,7 +40,7 @@ class HomeScreen extends ConsumerWidget {
             customMessage: 'Error al cargar datos: ${snapshot.error}',
           );
         } else if (snapshot.hasData) {
-          final userProfile = snapshot.data!['profile'];
+          final userProfile = snapshot.data!['profile'] as UserProfile;
           final List<Map<String, dynamic>> analyses =
               snapshot.data!['analyses'] as List<Map<String, dynamic>>;
 

@@ -26,6 +26,7 @@ class App extends ConsumerWidget {
         '/verify': (_) => const VerifyEmailScreen(),
         '/forgot-password': (_) => const ForgotPasswordScreen(),
         '/sign-up': (_) => const SignUpScreen(),
+        '/health-info': (_) => const HealthInfoScreen(),
       },
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.background,

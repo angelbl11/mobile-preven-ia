@@ -86,7 +86,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             context: context,
             message: 'Cuenta creada correctamente',
           );
-          Navigator.pushReplacementNamed(context, '/health-info');
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil('/health-info', (route) => false);
         },
       );
     }
