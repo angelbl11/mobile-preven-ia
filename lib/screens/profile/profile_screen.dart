@@ -15,6 +15,7 @@ import 'package:mobile_preven_ia_app/functions/status_handler_function.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/screens/verify-email/verify_email_screen.dart';
+import 'package:mobile_preven_ia_app/utils/get_user_initials.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_error.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_loader.dart';
@@ -56,17 +57,6 @@ class ProfileScreen extends ConsumerWidget {
         });
   }
 
-  String _getUserInitials(UserProfile userProfile) {
-    String initials = '';
-    if (userProfile.name.isNotEmpty) {
-      initials += userProfile.name[0];
-    }
-    if (userProfile.lastName.isNotEmpty) {
-      initials += userProfile.lastName[0];
-    }
-    return initials;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return FutureBuilder<Map<String, dynamic>>(
@@ -105,13 +95,15 @@ class ProfileScreen extends ConsumerWidget {
                             CircleAvatar(
                               radius: 50,
                               backgroundColor: AppColors.secondary,
-                              backgroundImage: userProfile.photoUrl != null
-                                  ? NetworkImage(userProfile.photoUrl!)
+                              backgroundImage: userProfile.photoUrl != '' &&
+                                      userProfile.photoUrl != null
+                                  ? NetworkImage(userProfile.photoUrl ?? '')
                                   : null,
-                              child: userProfile.photoUrl == null
+                              child: userProfile.photoUrl == null ||
+                                      userProfile.photoUrl == ''
                                   ? Center(
                                       child: Text(
-                                        _getUserInitials(userProfile),
+                                        getUserInitials(userProfile),
                                         style: AppFonts.headline3
                                             .copyWith(color: Colors.white),
                                       ),

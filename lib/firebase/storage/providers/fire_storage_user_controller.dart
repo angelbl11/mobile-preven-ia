@@ -16,9 +16,12 @@ class FireStorageUserController extends _$FireStorageUserController {
 
   Future<UserProfile?> getUserProfile() async {
     final uid = ref.read(fireAuthControllerProvider).value?.user.uid;
-    final userProfile =
-        await ref.read(fireStorageRepositoryProvider).getUserProfile(uid ?? '');
-    return userProfile;
+
+    try {
+      return ref.read(fireStorageRepositoryProvider).getUserProfile(uid!);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> updateUserWeight(double newWeight) {

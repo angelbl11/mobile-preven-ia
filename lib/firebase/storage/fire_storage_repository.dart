@@ -213,7 +213,7 @@ class FireStorageRepository {
       final imageUrl = await storageRef.getDownloadURL();
 
       await FirebaseFirestore.instance.collection('users').doc(uid).update({
-        'photoUrl': imageUrl,
+        'photo_url': imageUrl,
       });
     } catch (e) {
       rethrow;
