@@ -85,7 +85,12 @@ class FireStorageRepository {
 
     final Map<String, List<String>> examAliases = {
       "glucose": ["Glucosa", "Glucemia", "Glucosa en ayunas"],
-      "ldl": ["LDL", "Colesterol LDL directo", "Colesterol LDL Directo"],
+      "ldl": [
+        "LDL",
+        "Colesterol LDL directo",
+        "Colesterol LDL Directo",
+        "Colesterol LDL"
+      ],
     };
 
     String? findExamKey(Map<String, dynamic> exams, List<String> aliases) {

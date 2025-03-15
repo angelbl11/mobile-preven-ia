@@ -8,6 +8,9 @@ import 'package:mobile_preven_ia_app/functions/show_toast.dart';
 import 'package:mobile_preven_ia_app/functions/status_handler_function.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
+import 'package:mobile_preven_ia_app/screens/legal-text/legal_text_screen.dart';
+import 'package:mobile_preven_ia_app/screens/legal-text/text/privacy_policy.dart';
+import 'package:mobile_preven_ia_app/screens/legal-text/text/terms_and_conditions.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_button.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_password_input.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
@@ -190,7 +193,18 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             text: 'Términos y condiciones',
                             style: AppFonts.button1.copyWith(
                                 fontSize: 14, color: AppColors.primary),
-                            recognizer: TapGestureRecognizer()..onTap = () {},
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const LegalTextScreen(
+                                      title: "Términos y Condiciones",
+                                      content: termsAndConditions,
+                                    ),
+                                  ),
+                                );
+                              },
                           ),
                           const TextSpan(
                             text: ' y nuestra ',
@@ -201,7 +215,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                                 fontSize: 14, color: AppColors.primary),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
-                                // Acción a ejecutar al pulsar "Política de privacidad"
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const LegalTextScreen(
+                                      title: "Política de Privacidad",
+                                      content: privacyPolicy,
+                                    ),
+                                  ),
+                                );
                               },
                           ),
                         ],

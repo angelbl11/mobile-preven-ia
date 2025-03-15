@@ -1,4 +1,7 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
+import 'package:flutter_animation_progress_bar/flutter_animation_progress_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
@@ -38,7 +41,7 @@ class _AnalysisDetailsScreenState extends ConsumerState<AnalysisDetailsScreen>
         analysisData?['diagnostico']['estado_global'] as String? ?? '';
     final recommendations =
         analysisData?['diagnostico']['observaciones'] as String? ?? '';
-
+    final modelsInfo = analysisData?['modelos'];
     return SafeArea(
       child: Scaffold(
         body: AnimatedOpacity(
@@ -53,6 +56,204 @@ class _AnalysisDetailsScreenState extends ConsumerState<AnalysisDetailsScreen>
                     text: 'Estos son tus resultados',
                     style: AppFonts.headline1),
                 const SizedBox(height: 16),
+                if (modelsInfo != null)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 16,
+                    children: [
+                      PviText(
+                          text: 'Evaluaciones de riesgo',
+                          style: AppFonts.headline2),
+                      const SizedBox(height: 16),
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.gray4,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          spacing: 16,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                PviText(
+                                  text: 'Diabetes',
+                                  style: AppFonts.headline3,
+                                ),
+                                const Spacer(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color.fromARGB(255, 0, 0, 0)
+                                        .withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: PviText(
+                                      text: modelsInfo?['diabetes']
+                                          ['risk_category'] as String,
+                                      style: AppFonts.body1.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 12,
+                                          color: modelsInfo?['diabetes']
+                                                      ['risk_category'] ==
+                                                  'Bajo'
+                                              ? AppColors.success
+                                              : modelsInfo?['diabetes']
+                                                          ['risk_category'] ==
+                                                      'Medio'
+                                                  ? AppColors.warning
+                                                  : AppColors.error)),
+                                ),
+                              ],
+                            ),
+                            FAProgressBar(
+                              size: 18,
+                              progressColor: modelsInfo?['diabetes']
+                                          ['risk_category'] ==
+                                      'Bajo'
+                                  ? AppColors.success
+                                  : modelsInfo?['diabetes']['risk_category'] ==
+                                          'Medio'
+                                      ? AppColors.warning
+                                      : AppColors.error,
+                              currentValue: (modelsInfo?['diabetes']
+                                      ['probability'] as double) *
+                                  100,
+                              displayText: '%',
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.gray4,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          spacing: 16,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                PviText(
+                                  text: 'Hipertensión',
+                                  style: AppFonts.headline3,
+                                ),
+                                const Spacer(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color.fromARGB(255, 0, 0, 0)
+                                        .withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: PviText(
+                                      text: modelsInfo?['hipertension']
+                                          ['risk_category'] as String,
+                                      style: AppFonts.body1.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 12,
+                                          color: modelsInfo?['hipertension']
+                                                      ['risk_category'] ==
+                                                  'Bajo'
+                                              ? AppColors.success
+                                              : modelsInfo?['hipertension']
+                                                          ['risk_category'] ==
+                                                      'Medio'
+                                                  ? AppColors.warning
+                                                  : AppColors.error)),
+                                ),
+                              ],
+                            ),
+                            FAProgressBar(
+                              size: 18,
+                              progressColor: modelsInfo?['hipertension']
+                                          ['risk_category'] ==
+                                      'Bajo'
+                                  ? AppColors.success
+                                  : modelsInfo?['hipertension']
+                                              ['risk_category'] ==
+                                          'Medio'
+                                      ? AppColors.warning
+                                      : AppColors.error,
+                              currentValue: (modelsInfo?['hipertension']
+                                      ['probability'] as double) *
+                                  100,
+                              displayText: '%',
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.gray4,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          spacing: 16,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                PviText(
+                                  text: 'Obesidad',
+                                  style: AppFonts.headline3,
+                                ),
+                                const Spacer(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color.fromARGB(255, 0, 0, 0)
+                                        .withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: PviText(
+                                      text: modelsInfo?['obesidad']
+                                          ['risk_category'] as String,
+                                      style: AppFonts.body1.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 12,
+                                          color: modelsInfo?['obesidad']
+                                                      ['risk_category'] ==
+                                                  'Bajo'
+                                              ? AppColors.success
+                                              : modelsInfo?['obesidad']
+                                                          ['risk_category'] ==
+                                                      'Medio'
+                                                  ? AppColors.warning
+                                                  : AppColors.error)),
+                                ),
+                              ],
+                            ),
+                            FAProgressBar(
+                              size: 18,
+                              progressColor: modelsInfo?['obesidad']
+                                          ['risk_category'] ==
+                                      'Bajo'
+                                  ? AppColors.success
+                                  : modelsInfo?['obesidad']['risk_category'] ==
+                                          'Medio'
+                                      ? AppColors.warning
+                                      : AppColors.error,
+                              currentValue: (modelsInfo?['obesidad']
+                                      ['probability'] as double) *
+                                  100,
+                              displayText: '%',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(12),
@@ -101,6 +302,8 @@ class _AnalysisDetailsScreenState extends ConsumerState<AnalysisDetailsScreen>
                     final range = examData['range'] as String? ?? '';
                     final explanation =
                         examData['explanation'] as String? ?? '';
+                    final healthyRange =
+                        examData['healthy_range'] as String? ?? '';
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
@@ -139,10 +342,19 @@ class _AnalysisDetailsScreenState extends ConsumerState<AnalysisDetailsScreen>
                           ),
                           Expanded(
                             flex: 2,
-                            child: PviText(
-                              text: value,
-                              style: AppFonts.body2,
-                              textAlign: TextAlign.center,
+                            child: Column(
+                              children: [
+                                PviText(
+                                  text: value,
+                                  style: AppFonts.body2,
+                                  textAlign: TextAlign.center,
+                                ),
+                                PviText(
+                                  text: healthyRange,
+                                  style: AppFonts.body3.copyWith(fontSize: 11),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ),
                           ),
                           Container(
@@ -194,12 +406,11 @@ class _AnalysisDetailsScreenState extends ConsumerState<AnalysisDetailsScreen>
                   width: double.infinity,
                   height: 56,
                   child: PviButton(
-                    child: PviText(
-                        text: 'Entendido',
-                        style: AppFonts.body2.copyWith(color: Colors.white)),
-                    onPressed: () =>
-                        Navigator.restorablePushReplacementNamed(context, '/'),
-                  ),
+                      child: PviText(
+                          text: 'Entendido',
+                          style: AppFonts.body2.copyWith(color: Colors.white)),
+                      onPressed: () => Navigator.of(context)
+                          .pushNamedAndRemoveUntil('/', (route) => false)),
                 ),
               ],
             ),

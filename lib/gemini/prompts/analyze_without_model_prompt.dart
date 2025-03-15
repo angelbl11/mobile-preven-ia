@@ -22,16 +22,18 @@ Tu objetivo es analizar cada parámetro clínico utilizando rangos de referencia
 3. Análisis Individual de Parámetros:
 Para cada parámetro en el JSON, realiza lo siguiente:
 - Comparación y Rangos:
-  Evalúa si el valor se clasifica como ALTO, BAJO o DENTRO DEL RANGO, basándote en los rangos de referencia para la población mexicana, considerando la edad, IMC y sexo.
+  Evalúa si el valor se clasifica como ALTO, BAJO o DENTRO DEL RANGO, basándote en los rangos de referencia para la población mexicana, considerando la edad, IMC y sexo. **Incluye explícitamente el rango de referencia saludable para este parámetro, adaptado a las variables proporcionadas. Cuando el rango varíe por sexo, especifica claramente el rango para "Hombre" o "Mujer" según el valor de la variable `sexo` proporcionada.**
 - Explicación Breve:
   Proporciona una breve descripción del parámetro, explicando su importancia en la salud y el impacto general de un valor anormal. Incluye, de forma general, una referencia a posibles riesgos relacionados con la obesidad, hipertensión o diabetes cuando corresponda.
 
 4. Diagnóstico General e Interpretación Global:
 - Resumen de Parámetros:
-  Considera todos los parámetros analizados junto con las variables IMC, sexo y edad para determinar un estado global del estudio, que se clasificará como:
-    - ACCEPTABLE: La mayoría de los valores están dentro de los rangos normales.
-    - OBSERVACIÓN: Algunos parámetros se encuentran fuera de rango, lo que sugiere la necesidad de seguimiento.
-    - CRÍTICO: Varios parámetros alterados que pueden indicar un riesgo general elevado.
+  Considera todos los parámetros analizados junto con las variables IMC, sexo y edad para determinar un estado global del estudio, que se clasificará estrictamente como:
+    - ACCEPTABLE: La **gran mayoría** de los valores están dentro de los rangos normales.
+    - OBSERVATION: **Al menos uno** pero no muchos parámetros se encuentran fuera de rango, lo que sugiere la necesidad de seguimiento.
+    - CRITICAL: **Múltiples** parámetros alterados que pueden indicar un riesgo general elevado.
+
+  Sé muy estricto con estas definiciones para garantizar la consistencia en el diagnóstico global.
 - Mensaje Final:
   Genera una conclusión breve que resuma el estado general de salud del usuario, recomendando acciones generales (por ejemplo, monitoreo regular, ajustes en el estilo de vida o consulta con un especialista) sin entrar en detalles diagnósticos específicos.
 
@@ -42,16 +44,19 @@ La salida debe ser un objeto JSON con la siguiente estructura (todo en español)
     "Hemoglobina": {
       "value": "13.5 g/dL",
       "range": "ON_RANGE",  // O "HIGH" o "LOW"
+      "healthy_range": "Hombre: 13.5-17.5 g/dL, Mujer: 12.0-15.5 g/dL", // Ejemplo de rango saludable según sexo
       "explanation": "La hemoglobina es esencial para el transporte de oxígeno. Un valor normal indica un buen estado general y un bajo riesgo de anemia."
     },
     "Glucosa en ayunas": {
       "value": "95 mg/dL",
       "range": "ON_RANGE",
+      "healthy_range": "70-100 mg/dL", // Ejemplo de rango saludable (no varía por sexo en este caso)
       "explanation": "La glucosa en ayunas evalúa el metabolismo del azúcar. Un valor normal sugiere un riesgo reducido de alteraciones metabólicas."
     },
     "Colesterol": {
       "value": "190 mg/dL",
       "range": "ON_RANGE",
+      "healthy_range": "<200 mg/dL", // Ejemplo de rango saludable (no varía por sexo en este caso)
       "explanation": "El colesterol es vital para la función celular. Mantenerlo en un rango normal favorece la salud cardiovascular."
     }
     // Incluir otros parámetros según corresponda
@@ -68,7 +73,8 @@ La salida debe ser un objeto JSON con la siguiente estructura (todo en español)
 }
 
 6. Consideraciones Adicionales:
-- Utiliza rangos de referencia basados en fuentes confiables y actualizadas, adaptadas a la población mexicana.
+- **Es fundamental que utilices rangos de referencia específicos y actualizados para la población mexicana, considerando las variables de edad, sexo e IMC cuando sea relevante para el parámetro.** Asegúrate de que la información sobre los rangos saludables sea precisa y provenga de fuentes confiables. **Cuando el rango de referencia varíe según el sexo, utiliza el valor de la variable `sexo` proporcionada para especificar claramente el rango para "Hombre" o "Mujer".**
 - Emplea un lenguaje claro y accesible para facilitar la comprensión de cada parámetro y la interpretación global del estudio.
 - La orientación hacia riesgos de obesidad, hipertensión y diabetes debe ser general y no específica, evitando detalles diagnósticos de nivel premium.
+- **Considera la posibilidad de que algunos parámetros tengan rangos óptimos o deseables que podrían ser diferentes de los rangos normales. Si es relevante, podrías mencionar brevemente si el valor se encuentra en un rango óptimo dentro del rango normal.**
 ''';

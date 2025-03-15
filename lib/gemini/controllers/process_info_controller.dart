@@ -90,7 +90,6 @@ class ProcessInfoController extends _$ProcessInfoController {
         return persistedAnalysis;
       }
     } catch (e) {
-      print('Error: $e');
       rethrow;
     }
 
@@ -223,7 +222,8 @@ class ProcessInfoController extends _$ProcessInfoController {
 
       final modifiedAnalyzePrompt = analyzeWithModelPrompt
           .replaceAll('valor_de_IMC', userProfile?.bmi.toString() ?? '0')
-          .replaceAll('valor_de_sexo', parseGender(userProfile?.gender ?? 'M'))
+          .replaceAll(
+              'valor_de_sexo', parseGender(userProfile?.gender ?? 'Masculino'))
           .replaceAll('valor_de_edad', age.toString());
 
       final analysisResponse = await gemini.prompt(

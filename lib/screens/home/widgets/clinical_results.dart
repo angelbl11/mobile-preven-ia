@@ -83,7 +83,7 @@ class ClinicalResults extends ConsumerWidget {
                     text: stateGeneral == 'CRITICAL'
                         ? 'Crítico'
                         : stateGeneral == 'OBSERVATION'
-                            ? 'Monitoreo'
+                            ? 'Revisión'
                             : 'Normal',
                     style: AppFonts.body1.copyWith(
                         fontWeight: FontWeight.w600,

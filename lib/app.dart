@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_preven_ia_app/firebase/auth/providers/fire_auth_controller.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
+import 'package:mobile_preven_ia_app/screens/analysis-details/analysis_details_screen.dart';
 import 'package:mobile_preven_ia_app/screens/forgot-password/forgot_password_screen.dart';
 import 'package:mobile_preven_ia_app/screens/health-info/health_info_screen.dart';
 import 'package:mobile_preven_ia_app/screens/navigation-handler/navigation_handler_screen.dart';
@@ -27,6 +28,7 @@ class App extends ConsumerWidget {
         '/forgot-password': (_) => const ForgotPasswordScreen(),
         '/sign-up': (_) => const SignUpScreen(),
         '/health-info': (_) => const HealthInfoScreen(),
+        '/analysis-details': (_) => const AnalysisDetailsScreen(),
       },
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.background,

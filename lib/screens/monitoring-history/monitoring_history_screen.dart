@@ -1,3 +1,4 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_preven_ia_app/firebase/auth/providers/fire_auth_controller.dart';
@@ -27,7 +28,7 @@ class MonitoringHistoryScreen extends ConsumerWidget {
     final weightHistory = await ref
         .watch(fireStorageAnalysisControllerProvider.notifier)
         .getWeightHistory();
-    final userInfo = await ref.read(fireAuthControllerProvider.future);
+    final userInfo = await ref.watch(fireAuthControllerProvider.future);
     return {
       'analyses': analyses,
       'monitoredValues': monitoredValues,
@@ -72,18 +73,31 @@ class MonitoringHistoryScreen extends ConsumerWidget {
                       userInfo.monitoringPreferences['weight'] == true)
                     SizedBox(
                       height: MediaQuery.of(context).size.height * 0.4,
-                      child: CarouselView(
-                        itemExtent: double.infinity,
-                        backgroundColor: AppColors.gray4,
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          if (userInfo.monitoringPreferences['glucose'] == true)
-                            GlucoseChart(data: monitoredValues),
-                          if (userInfo.monitoringPreferences['ldl'] == true)
-                            LDLChart(data: monitoredValues),
-                          if (userInfo.monitoringPreferences['weight'] == true)
-                            WeightChart(data: weightHistory),
-                        ],
+                      child: Container(
+                        color: AppColors.gray4,
+                        child: CarouselSlider(
+                          options: CarouselOptions(
+                            viewportFraction: 1.0,
+                            scrollDirection: Axis.horizontal,
+                            enableInfiniteScroll: false,
+                          ),
+                          items: [
+                            if (userInfo.monitoringPreferences['glucose'] ==
+                                true)
+                              GlucoseChart(data: monitoredValues),
+                            if (userInfo.monitoringPreferences['ldl'] == true)
+                              LDLChart(data: monitoredValues),
+                            if (userInfo.monitoringPreferences['weight'] ==
+                                true)
+                              WeightChart(data: weightHistory),
+                          ].map((widget) {
+                            return Builder(
+                              builder: (BuildContext context) {
+                                return widget;
+                              },
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
                   const SizedBox(height: 16),
@@ -100,14 +114,16 @@ class MonitoringHistoryScreen extends ConsumerWidget {
                       itemCount: analyses.length,
                       itemBuilder: (context, index) {
                         return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 16),
                             ClinicalResults(analysis: analyses[index]),
+                            if (index != analyses.length - 1)
+                              const SizedBox(height: 16),
                           ],
                         );
                       },
                     ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.1),
                   if (analyses != null && analyses.isEmpty)
                     PviText(
                       textAlign: TextAlign.center,
