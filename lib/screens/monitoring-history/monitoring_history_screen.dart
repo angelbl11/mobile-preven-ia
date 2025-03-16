@@ -68,9 +68,10 @@ class MonitoringHistoryScreen extends ConsumerWidget {
                     style: AppFonts.headline2,
                   ),
                   const SizedBox(height: 16),
-                  if (userInfo.monitoringPreferences['glucose'] == true ||
-                      userInfo.monitoringPreferences['ldl'] == true ||
-                      userInfo.monitoringPreferences['weight'] == true)
+                  if (userInfo.monitoringPreferences != null &&
+                      (userInfo.monitoringPreferences!.glucose ||
+                          userInfo.monitoringPreferences!.ldl ||
+                          userInfo.monitoringPreferences!.weight))
                     SizedBox(
                       height: MediaQuery.of(context).size.height * 0.4,
                       child: Container(
@@ -82,13 +83,11 @@ class MonitoringHistoryScreen extends ConsumerWidget {
                             enableInfiniteScroll: false,
                           ),
                           items: [
-                            if (userInfo.monitoringPreferences['glucose'] ==
-                                true)
+                            if (userInfo.monitoringPreferences!.glucose)
                               GlucoseChart(data: monitoredValues),
-                            if (userInfo.monitoringPreferences['ldl'] == true)
+                            if (userInfo.monitoringPreferences!.ldl)
                               LDLChart(data: monitoredValues),
-                            if (userInfo.monitoringPreferences['weight'] ==
-                                true)
+                            if (userInfo.monitoringPreferences!.weight)
                               WeightChart(data: weightHistory),
                           ].map((widget) {
                             return Builder(

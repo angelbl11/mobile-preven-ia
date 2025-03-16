@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mobile_preven_ia_app/firebase/classes/user_step.dart';
 import 'package:mobile_preven_ia_app/firebase/classes/session_info.dart';
 import 'package:uuid/uuid.dart';
 
@@ -23,7 +24,7 @@ class FireAuthRepository {
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
       final data = docSnapshot.data();
-      final nextStep = data?['next_step'] ?? 'COMPLETED';
+      final nextStep = UserStep.fromString(data?['next_step'] ?? '');
 
       return SessionInfo(user: userCredential.user!, nextStep: nextStep);
     } catch (e) {

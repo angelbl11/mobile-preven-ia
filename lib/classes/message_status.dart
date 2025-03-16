@@ -40,7 +40,7 @@ extension MessageStatusX on MessageStatus {
       case MessageStatus.success:
         return '¡Listo!';
       case MessageStatus.error:
-        return '¡Hubo un problema!';
+        return '¡Ocurrió un error!';
       case MessageStatus.info:
         return '¡Atención!';
       case MessageStatus.warning:
