@@ -68,6 +68,20 @@ class _HealthInfoScreenState extends ConsumerState<HealthInfoScreen> {
         initialDate: DateTime(2000, 1, 1),
         firstDate: DateTime(1900),
         lastDate: DateTime.now(),
+        builder: (BuildContext context, Widget? child) {
+          return Theme(
+            data: ThemeData.light().copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: AppColors.primary,
+                onPrimary: Colors.white,
+                surface: Colors.white,
+                onSurface: Colors.black,
+              ),
+              dialogBackgroundColor: Colors.white,
+            ),
+            child: child!,
+          );
+        },
       );
     }
     if (selectedDate != null) {

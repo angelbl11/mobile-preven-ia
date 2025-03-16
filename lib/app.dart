@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_preven_ia_app/firebase/auth/providers/fire_auth_controller.dart';
@@ -12,6 +14,7 @@ import 'package:mobile_preven_ia_app/screens/sign-in/sign_in_screen.dart';
 import 'package:mobile_preven_ia_app/screens/sign-up/sign_up_screen.dart';
 import 'package:mobile_preven_ia_app/screens/verify-email/verify_email_screen.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_error.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -19,6 +22,14 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('es', 'ES'), // Español
+      ],
       debugShowCheckedModeBanner: false,
       home: const AuthStateHandler(),
       routes: {
@@ -58,7 +69,7 @@ class AuthStateHandler extends ConsumerWidget {
       }
       if (authController.currentSession?.nextStep.step ==
           UserStepEnum.healthInfo) {
-        return const HealthInfoScreen();
+        return const SignInScreen();
       }
       return NavigationHandlerScreen();
     } else {
