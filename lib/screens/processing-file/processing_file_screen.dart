@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/mappers/analysis_data.dart';
 import 'package:mobile_preven_ia_app/gemini/controllers/process_info_controller.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/screens/analysis-details/analysis_details_screen.dart';
@@ -16,7 +17,7 @@ class ProcessingFileScreen extends ConsumerStatefulWidget {
 
 class ProcessingFileScreenState extends ConsumerState<ProcessingFileScreen> {
   bool _hasNavigated = false;
-  late Future<Map<String, dynamic>?> _processInfoFuture;
+  late Future<AnalysisData?> _processInfoFuture;
   bool _initialized = false;
 
   @override

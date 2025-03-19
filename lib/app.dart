@@ -28,7 +28,7 @@ class App extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
-        Locale('es', 'ES'), // Español
+        Locale('es', 'ES'),
       ],
       debugShowCheckedModeBanner: false,
       home: const AuthStateHandler(),

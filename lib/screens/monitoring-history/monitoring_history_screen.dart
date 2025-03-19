@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_preven_ia_app/firebase/auth/providers/fire_auth_controller.dart';
 import 'package:mobile_preven_ia_app/firebase/classes/session_info.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/clinical-analysis/clinical_analysis_controller.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/mappers/analysis_data.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/mappers/monitoring_data.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/mappers/weight_history.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_analysis_controller.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/screens/home/widgets/clinical_results.dart';
@@ -20,13 +21,12 @@ class MonitoringHistoryScreen extends ConsumerWidget {
   const MonitoringHistoryScreen({super.key});
 
   Future<Map<String, dynamic>> _getHistoricData(WidgetRef ref) async {
-    final analyses =
-        await ref.watch(fireStorageAnalysisControllerProvider.future);
+    final analyses = await ref.read(clinicalAnalysisControllerProvider.future);
     final monitoredValues = await ref
-        .watch(fireStorageAnalysisControllerProvider.notifier)
+        .watch(clinicalAnalysisControllerProvider.notifier)
         .getGlucoseAndLDLValuesByDate();
     final weightHistory = await ref
-        .watch(fireStorageAnalysisControllerProvider.notifier)
+        .watch(clinicalAnalysisControllerProvider.notifier)
         .getWeightHistory();
     final userInfo = await ref.watch(fireAuthControllerProvider.future);
     return {
@@ -52,7 +52,7 @@ class MonitoringHistoryScreen extends ConsumerWidget {
           final data = snapshot.data!;
           final List<MonitoringData> monitoredValues =
               data['monitoredValues'] as List<MonitoringData>;
-          final analyses = data['analyses'] as List<Map<String, dynamic>>?;
+          final analyses = data['analyses'] as List<AnalysisData>?;
           final weightHistory = data['weightHistory'] as List<WeightHistory>;
           final userInfo = data['user'] as SessionInfo;
           return SafeArea(
