@@ -1,12 +1,14 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_preven_ia_app/app.dart';
 import 'package:mobile_preven_ia_app/classes/environment_keys.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await FlutterLocalization.instance.ensureInitialized();
   await Firebase.initializeApp();
   Gemini.init(apiKey: EnvironmentKeys.geminiApiKey);
   runApp(const MainApp());

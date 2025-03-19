@@ -171,8 +171,4 @@ class FireAuthController extends _$FireAuthController {
 
   /// Get current user data
   SessionInfo? get currentSession => state.value;
-
-  /// Check if user needs to complete profile
-  bool get needsProfileCompletion =>
-      state.value?.needsProfileCompletion ?? true;
 }

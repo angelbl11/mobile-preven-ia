@@ -5,10 +5,10 @@ import 'package:mobile_preven_ia_app/firebase/storage/classes/user_profile.dart'
 import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_repository_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'fire_storage_user_controller.g.dart';
+part 'user_controller.g.dart';
 
 @Riverpod(keepAlive: true)
-class FireStorageUserController extends _$FireStorageUserController {
+class UserController extends _$UserController {
   @override
   Future<UserProfile?> build() async {
     return getUserProfile();

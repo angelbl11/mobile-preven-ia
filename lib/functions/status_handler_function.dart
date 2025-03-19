@@ -27,12 +27,15 @@ class StatusHandlerFunction {
       String errorMessage;
 
       if (e is FirebaseAuthException) {
-        errorMessage = e.message ?? 'Oops! Ocurrió un error de autenticación';
+        String errorCode = e.code;
+        errorMessage = firebaseErrorMessages[errorCode] ??
+            e.message ??
+            'Oops! Ocurrió un error de autenticación.';
       } else if (e is FirebaseException) {
         errorMessage =
-            e.message ?? 'Oops! Ocurrió un error en la base de datos';
+            e.message ?? 'Oops! Ocurrió un error en la base de datos.';
       } else {
-        errorMessage = e.toString();
+        errorMessage = 'Oops! Ocurrió un error inesperado.';
       }
 
       // Close the loader dialog if still open
@@ -51,4 +54,20 @@ class StatusHandlerFunction {
       }
     }
   }
+
+  static Map<String, String> firebaseErrorMessages = {
+    'user-not-found': 'No se encontró un usuario con este correo electrónico.',
+    'wrong-password': 'Contraseña incorrecta.',
+    'email-already-in-use': 'Este correo electrónico ya está en uso.',
+    'invalid-email': 'El correo electrónico no es válido.',
+    'operation-not-allowed': 'La operación no está permitida.',
+    'weak-password': 'La contraseña es demasiado débil.',
+    'too-many-requests':
+        'Demasiados intentos fallidos. Intente de nuevo más tarde.',
+    'user-disabled': 'El usuario ha sido deshabilitado.',
+    'network-request-failed': 'Error de red. Intente de nuevo más tarde.',
+    'internal-error': 'Error interno. Intente de nuevo más tarde.',
+    'unknown': 'Oops! Ocurrió un error inesperado.',
+    'invalid-credential': 'Credenciales inválidas.',
+  };
 }

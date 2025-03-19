@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/mappers/analysis_data.dart';
 import 'package:mobile_preven_ia_app/gemini/controllers/process_info_controller.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/screens/analysis-details/analysis_details_screen.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_error.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
-import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class ProcessingFileScreen extends ConsumerStatefulWidget {
   const ProcessingFileScreen({super.key});
@@ -17,7 +17,7 @@ class ProcessingFileScreen extends ConsumerStatefulWidget {
 
 class ProcessingFileScreenState extends ConsumerState<ProcessingFileScreen> {
   bool _hasNavigated = false;
-  late Future<Map<String, dynamic>?> _processInfoFuture;
+  late Future<AnalysisData?> _processInfoFuture;
   bool _initialized = false;
 
   @override
@@ -51,14 +51,17 @@ class ProcessingFileScreenState extends ConsumerState<ProcessingFileScreen> {
         if (snapshot.hasData && !_hasNavigated) {
           _hasNavigated = true;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+            Navigator.pushAndRemoveUntil(
               context,
-              screen: const AnalysisDetailsScreen(),
-              withNavBar: false,
-              pageTransitionAnimation: PageTransitionAnimation.fade,
-              settings: RouteSettings(arguments: {
-                'analysis': snapshot.data,
-              }),
+              MaterialPageRoute(
+                builder: (context) => const AnalysisDetailsScreen(),
+                settings: RouteSettings(
+                  arguments: {
+                    'analysis': snapshot.data,
+                  },
+                ),
+              ),
+              (route) => route.settings.name == '/',
             );
           });
           return const SizedBox.shrink();

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/classes/user_profile.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/mappers/analysis_data.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/mappers/monitoring_data.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/mappers/weight_history.dart';
 import 'package:mobile_preven_ia_app/utils/sanitize_json.dart';
@@ -25,31 +26,33 @@ class FireStorageRepository {
     }
   }
 
-  Future<Map<String, dynamic>> createUserAnalysis(
-      String uid, String analysis) async {
+  Future<AnalysisData> createUserAnalysis(String uid, String analysis) async {
     try {
       final sanitizedAnalysis = sanitizeJson(analysis);
-
       Map<String, dynamic> analysisMap =
           json.decode(sanitizedAnalysis) as Map<String, dynamic>;
 
       final analysisRef =
           _firestore.collection('users').doc(uid).collection('analysis').doc();
+      final now = DateTime.now();
 
-      analysisMap['id'] = analysisRef.id;
-      analysisMap['created_at'] = DateTime.now().toIso8601String();
-      analysisMap['user_id'] = uid;
+      final analysisData = AnalysisData(
+        id: analysisRef.id,
+        userId: uid,
+        createdAt: now,
+        exams: analysisMap['exams'] as Map<String, dynamic>,
+        diagnosis: analysisMap['diagnosis'] as Map<String, dynamic>,
+        variables: analysisMap['variables'] as Map<String, dynamic>,
+      );
 
-      await analysisRef.set(analysisMap);
-
-      final docSnapshot = await analysisRef.get();
-      return docSnapshot.data() as Map<String, dynamic>;
+      await analysisRef.set(analysisData.toMap());
+      return analysisData;
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<List<Map<String, dynamic>>> getUserAnalyses(String uid) async {
+  Future<List<AnalysisData>> getUserAnalyses(String uid) async {
     try {
       final querySnapshot = await _firestore
           .collection('users')
@@ -57,13 +60,15 @@ class FireStorageRepository {
           .collection('analysis')
           .orderBy('created_at', descending: true)
           .get();
-      return querySnapshot.docs.map((doc) => doc.data()).toList();
+      return querySnapshot.docs
+          .map((doc) => AnalysisData.fromMap(doc.data()))
+          .toList();
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<Map<String, dynamic>> getUserAnalysisById(
+  Future<AnalysisData> getUserAnalysisById(
       String uid, String analysisId) async {
     try {
       final docSnapshot = await _firestore
@@ -72,7 +77,7 @@ class FireStorageRepository {
           .collection('analysis')
           .doc(analysisId)
           .get();
-      return docSnapshot.data() as Map<String, dynamic>;
+      return AnalysisData.fromMap(docSnapshot.data() as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }
@@ -85,7 +90,12 @@ class FireStorageRepository {
 
     final Map<String, List<String>> examAliases = {
       "glucose": ["Glucosa", "Glucemia", "Glucosa en ayunas"],
-      "ldl": ["LDL", "Colesterol LDL directo", "Colesterol LDL Directo"],
+      "ldl": [
+        "LDL",
+        "Colesterol LDL directo",
+        "Colesterol LDL Directo",
+        "Colesterol LDL"
+      ],
     };
 
     String? findExamKey(Map<String, dynamic> exams, List<String> aliases) {
@@ -98,38 +108,34 @@ class FireStorageRepository {
     }
 
     for (final analysis in userAnalyses) {
-      final createdAtStr = analysis["created_at"] as String?;
+      final createdAtStr = analysis.createdAt.toIso8601String();
       DateTime? date;
-      if (createdAtStr != null) {
-        try {
-          date = DateTime.parse(createdAtStr);
-        } catch (e) {
-          rethrow;
-        }
+      try {
+        date = DateTime.parse(createdAtStr);
+      } catch (e) {
+        rethrow;
       }
 
-      final exams = analysis["exams"] as Map<String, dynamic>?;
+      final exams = analysis.exams;
 
       double? glucoseValue;
       double? ldlValue;
 
-      if (exams != null) {
-        final glucoseKey = findExamKey(exams, examAliases["glucose"]!);
-        if (glucoseKey != null) {
-          final rawValue = exams[glucoseKey]["value"] as String?;
-          if (rawValue != null) {
-            final numericValueStr = rawValue.replaceAll(RegExp(r'[^\d\.]'), '');
-            glucoseValue = double.tryParse(numericValueStr);
-          }
+      final glucoseKey = findExamKey(exams, examAliases["glucose"]!);
+      if (glucoseKey != null) {
+        final rawValue = exams[glucoseKey]["value"] as String?;
+        if (rawValue != null) {
+          final numericValueStr = rawValue.replaceAll(RegExp(r'[^\d\.]'), '');
+          glucoseValue = double.tryParse(numericValueStr);
         }
+      }
 
-        final ldlKey = findExamKey(exams, examAliases["ldl"]!);
-        if (ldlKey != null) {
-          final rawValue = exams[ldlKey]["value"] as String?;
-          if (rawValue != null) {
-            final numericValueStr = rawValue.replaceAll(RegExp(r'[^\d\.]'), '');
-            ldlValue = double.tryParse(numericValueStr);
-          }
+      final ldlKey = findExamKey(exams, examAliases["ldl"]!);
+      if (ldlKey != null) {
+        final rawValue = exams[ldlKey]["value"] as String?;
+        if (rawValue != null) {
+          final numericValueStr = rawValue.replaceAll(RegExp(r'[^\d\.]'), '');
+          ldlValue = double.tryParse(numericValueStr);
         }
       }
 

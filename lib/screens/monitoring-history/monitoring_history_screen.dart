@@ -1,10 +1,12 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_preven_ia_app/firebase/auth/providers/fire_auth_controller.dart';
 import 'package:mobile_preven_ia_app/firebase/classes/session_info.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/clinical-analysis/clinical_analysis_controller.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/mappers/analysis_data.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/mappers/monitoring_data.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/mappers/weight_history.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_analysis_controller.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/screens/home/widgets/clinical_results.dart';
@@ -19,15 +21,14 @@ class MonitoringHistoryScreen extends ConsumerWidget {
   const MonitoringHistoryScreen({super.key});
 
   Future<Map<String, dynamic>> _getHistoricData(WidgetRef ref) async {
-    final analyses =
-        await ref.watch(fireStorageAnalysisControllerProvider.future);
+    final analyses = await ref.read(clinicalAnalysisControllerProvider.future);
     final monitoredValues = await ref
-        .watch(fireStorageAnalysisControllerProvider.notifier)
+        .watch(clinicalAnalysisControllerProvider.notifier)
         .getGlucoseAndLDLValuesByDate();
     final weightHistory = await ref
-        .watch(fireStorageAnalysisControllerProvider.notifier)
+        .watch(clinicalAnalysisControllerProvider.notifier)
         .getWeightHistory();
-    final userInfo = await ref.read(fireAuthControllerProvider.future);
+    final userInfo = await ref.watch(fireAuthControllerProvider.future);
     return {
       'analyses': analyses,
       'monitoredValues': monitoredValues,
@@ -51,7 +52,7 @@ class MonitoringHistoryScreen extends ConsumerWidget {
           final data = snapshot.data!;
           final List<MonitoringData> monitoredValues =
               data['monitoredValues'] as List<MonitoringData>;
-          final analyses = data['analyses'] as List<Map<String, dynamic>>?;
+          final analyses = data['analyses'] as List<AnalysisData>?;
           final weightHistory = data['weightHistory'] as List<WeightHistory>;
           final userInfo = data['user'] as SessionInfo;
           return SafeArea(
@@ -67,23 +68,35 @@ class MonitoringHistoryScreen extends ConsumerWidget {
                     style: AppFonts.headline2,
                   ),
                   const SizedBox(height: 16),
-                  if (userInfo.monitoringPreferences['glucose'] == true ||
-                      userInfo.monitoringPreferences['ldl'] == true ||
-                      userInfo.monitoringPreferences['weight'] == true)
+                  if (userInfo.monitoringPreferences != null &&
+                      (userInfo.monitoringPreferences!.glucose ||
+                          userInfo.monitoringPreferences!.ldl ||
+                          userInfo.monitoringPreferences!.weight))
                     SizedBox(
                       height: MediaQuery.of(context).size.height * 0.4,
-                      child: CarouselView(
-                        itemExtent: double.infinity,
-                        backgroundColor: AppColors.gray4,
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          if (userInfo.monitoringPreferences['glucose'] == true)
-                            GlucoseChart(data: monitoredValues),
-                          if (userInfo.monitoringPreferences['ldl'] == true)
-                            LDLChart(data: monitoredValues),
-                          if (userInfo.monitoringPreferences['weight'] == true)
-                            WeightChart(data: weightHistory),
-                        ],
+                      child: Container(
+                        color: AppColors.gray4,
+                        child: CarouselSlider(
+                          options: CarouselOptions(
+                            viewportFraction: 1.0,
+                            scrollDirection: Axis.horizontal,
+                            enableInfiniteScroll: false,
+                          ),
+                          items: [
+                            if (userInfo.monitoringPreferences!.glucose)
+                              GlucoseChart(data: monitoredValues),
+                            if (userInfo.monitoringPreferences!.ldl)
+                              LDLChart(data: monitoredValues),
+                            if (userInfo.monitoringPreferences!.weight)
+                              WeightChart(data: weightHistory),
+                          ].map((widget) {
+                            return Builder(
+                              builder: (BuildContext context) {
+                                return widget;
+                              },
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
                   const SizedBox(height: 16),
@@ -100,14 +113,16 @@ class MonitoringHistoryScreen extends ConsumerWidget {
                       itemCount: analyses.length,
                       itemBuilder: (context, index) {
                         return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 16),
                             ClinicalResults(analysis: analyses[index]),
+                            if (index != analyses.length - 1)
+                              const SizedBox(height: 16),
                           ],
                         );
                       },
                     ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.1),
                   if (analyses != null && analyses.isEmpty)
                     PviText(
                       textAlign: TextAlign.center,

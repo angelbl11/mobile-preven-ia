@@ -9,7 +9,7 @@ import 'package:mobile_preven_ia_app/classes/message_status.dart';
 import 'package:mobile_preven_ia_app/firebase/auth/providers/fire_auth_controller.dart';
 import 'package:mobile_preven_ia_app/firebase/classes/session_info.dart';
 import 'package:mobile_preven_ia_app/firebase/storage/classes/user_profile.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_user_controller.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/user/user_controller.dart';
 import 'package:mobile_preven_ia_app/functions/show_toast.dart';
 import 'package:mobile_preven_ia_app/functions/status_handler_function.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
@@ -26,8 +26,7 @@ import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
   Future<Map<String, dynamic>> _getUserData(WidgetRef ref) async {
-    final userProfile =
-        await ref.watch(fireStorageUserControllerProvider.future);
+    final userProfile = await ref.read(userControllerProvider.future);
     final authInfo = await ref.watch(fireAuthControllerProvider.future);
     return {
       'profile': userProfile,
@@ -46,10 +45,10 @@ class ProfileScreen extends ConsumerWidget {
     StatusHandlerFunction.handleStatus(
         context: context,
         action: ref
-            .read(fireStorageUserControllerProvider.notifier)
+            .read(userControllerProvider.notifier)
             .updateProfilePicture(file),
         onSuccessCallBack: () {
-          ref.invalidate(fireStorageUserControllerProvider);
+          ref.invalidate(userControllerProvider);
           showToast(
               status: MessageStatus.success,
               context: context,
@@ -290,14 +289,14 @@ class ProfileScreen extends ConsumerWidget {
                                                         .handleStatus(
                                                             context: context,
                                                             action: ref
-                                                                .read(fireStorageUserControllerProvider
+                                                                .read(userControllerProvider
                                                                     .notifier)
                                                                 .updateUserWeight(
                                                                     newWeight),
                                                             onSuccessCallBack:
                                                                 () {
                                                               ref.invalidate(
-                                                                  fireStorageUserControllerProvider);
+                                                                  userControllerProvider);
                                                               showToast(
                                                                   status:
                                                                       MessageStatus

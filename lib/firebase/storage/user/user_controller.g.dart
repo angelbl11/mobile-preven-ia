@@ -1,27 +1,26 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'process_info_controller.dart';
+part of 'user_controller.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$processInfoControllerHash() =>
-    r'9f0fe03ec3fcebe1d767b69ca93dedacf2e11856';
+String _$userControllerHash() => r'1070ed113355d2b039881e17b250ed09e175724f';
 
-/// See also [ProcessInfoController].
-@ProviderFor(ProcessInfoController)
-final processInfoControllerProvider = AutoDisposeAsyncNotifierProvider<
-    ProcessInfoController, AnalysisData?>.internal(
-  ProcessInfoController.new,
-  name: r'processInfoControllerProvider',
+/// See also [UserController].
+@ProviderFor(UserController)
+final userControllerProvider =
+    AsyncNotifierProvider<UserController, UserProfile?>.internal(
+  UserController.new,
+  name: r'userControllerProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$processInfoControllerHash,
+      : _$userControllerHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$ProcessInfoController = AutoDisposeAsyncNotifier<AnalysisData?>;
+typedef _$UserController = AsyncNotifier<UserProfile?>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

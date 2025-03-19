@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:mobile_preven_ia_app/api/controllers/api_controller.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_analysis_controller.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_user_controller.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/clinical-analysis/clinical_analysis_controller.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/mappers/analysis_data.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/user/user_controller.dart';
+import 'package:mobile_preven_ia_app/gemini/controllers/gemini_controller.dart';
 import 'package:mobile_preven_ia_app/gemini/prompts/analyze_with_model_prompt.dart';
 import 'package:mobile_preven_ia_app/gemini/prompts/analyze_without_model_prompt.dart';
 import 'package:mobile_preven_ia_app/gemini/prompts/extraction_prompt.dart';
@@ -16,7 +18,7 @@ part 'process_info_controller.g.dart';
 @riverpod
 class ProcessInfoController extends _$ProcessInfoController {
   @override
-  Future<Map<String, dynamic>?> build() async {
+  Future<AnalysisData?> build() async {
     return null;
   }
 
@@ -48,10 +50,9 @@ class ProcessInfoController extends _$ProcessInfoController {
     return (gender == 'MALE') ? 'Masculino' : 'Femenino';
   }
 
-  Future<Map<String, dynamic>?> analyzeTextWithoutModel(
-      String plainText) async {
+  Future<AnalysisData?> analyzeTextWithoutModel(String plainText) async {
     try {
-      final gemini = Gemini.instance;
+      final gemini = ref.read(geminiControllerProvider);
       final extractionResponse = await gemini.prompt(
         parts: [
           Part.text(extractionPrompt),
@@ -59,8 +60,7 @@ class ProcessInfoController extends _$ProcessInfoController {
         ],
       );
 
-      final userProfile =
-          await ref.read(fireStorageUserControllerProvider.future);
+      final userProfile = await ref.read(userControllerProvider.future);
 
       int age = 0;
       final birthDate = _parseBirthDate(userProfile?.birthDate);
@@ -84,13 +84,12 @@ class ProcessInfoController extends _$ProcessInfoController {
       final currentUser = ref.read(fireAuthControllerProvider).value?.user;
       if (analysisOutput != null && currentUser != null) {
         final persistedAnalysis = await ref
-            .read(fireStorageAnalysisControllerProvider.notifier)
+            .read(clinicalAnalysisControllerProvider.notifier)
             .createUserAnalysis(currentUser.uid, analysisOutput);
         state = AsyncData(persistedAnalysis);
         return persistedAnalysis;
       }
     } catch (e) {
-      print('Error: $e');
       rethrow;
     }
 
@@ -120,34 +119,30 @@ class ProcessInfoController extends _$ProcessInfoController {
     return null;
   }
 
-  Future<Map<String, dynamic>?> analyzeTextWithModel(
+  Future<AnalysisData?> analyzeTextWithModel(
     String plainText,
     Map<String, String> parameterValues,
   ) async {
     try {
-      final gemini = Gemini.instance;
-
+      final gemini = ref.read(geminiControllerProvider.notifier);
       final extractionResponse = await gemini.prompt(
-        parts: [
+        [
           Part.text(extractionPrompt),
           Part.text(plainText),
         ],
       );
 
       Map<String, dynamic> extractedData = {};
-      if (extractionResponse?.output != null) {
-        final sanitizedOutput = sanitizeJson(extractionResponse?.output ?? '');
-        try {
-          extractedData = json.decode(sanitizedOutput) as Map<String, dynamic>;
-        } catch (e) {
-          extractedData = {};
-        }
+      final sanitizedOutput = sanitizeJson(extractionResponse);
+      try {
+        extractedData = json.decode(sanitizedOutput) as Map<String, dynamic>;
+      } catch (e) {
+        extractedData = {};
       }
 
       final exams = extractedData;
 
-      final userProfile =
-          await ref.read(fireStorageUserControllerProvider.future);
+      final userProfile = await ref.read(userControllerProvider.future);
 
       int age = 0;
       final birthDate = _parseBirthDate(userProfile?.birthDate);
@@ -223,22 +218,21 @@ class ProcessInfoController extends _$ProcessInfoController {
 
       final modifiedAnalyzePrompt = analyzeWithModelPrompt
           .replaceAll('valor_de_IMC', userProfile?.bmi.toString() ?? '0')
-          .replaceAll('valor_de_sexo', parseGender(userProfile?.gender ?? 'M'))
+          .replaceAll(
+              'valor_de_sexo', parseGender(userProfile?.gender ?? 'Masculino'))
           .replaceAll('valor_de_edad', age.toString());
 
-      final analysisResponse = await gemini.prompt(
-        parts: [
-          Part.text(modifiedAnalyzePrompt),
-          Part.text(plainText),
-          Part.text(predictionsJson),
-        ],
-      );
+      final analysisResponse = await gemini.prompt([
+        Part.text(modifiedAnalyzePrompt),
+        Part.text(plainText),
+        Part.text(predictionsJson),
+      ]);
 
-      final analysisOutput = analysisResponse?.output;
+      final analysisOutput = analysisResponse;
       final currentUser = ref.read(fireAuthControllerProvider).value?.user;
-      if (analysisOutput != null && currentUser != null) {
+      if (currentUser != null) {
         final persistedAnalysis = await ref
-            .read(fireStorageAnalysisControllerProvider.notifier)
+            .read(clinicalAnalysisControllerProvider.notifier)
             .createUserAnalysis(currentUser.uid, analysisOutput);
 
         state = AsyncData(persistedAnalysis);

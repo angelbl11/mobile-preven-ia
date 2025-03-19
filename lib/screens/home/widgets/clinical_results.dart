@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/providers/fire_storage_analysis_controller.dart';
+import 'package:mobile_preven_ia_app/extensions/date_formatter_extension.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/clinical-analysis/clinical_analysis_controller.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/mappers/analysis_data.dart';
 import 'package:mobile_preven_ia_app/functions/status_handler_function.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
@@ -17,27 +19,12 @@ class ClinicalResults extends ConsumerWidget {
     required this.analysis,
   });
 
-  final Map<String, dynamic> analysis;
-
-  String _formatDate(String isoString) {
-    try {
-      final date = DateTime.parse(isoString);
-      final day = date.day.toString().padLeft(2, '0');
-      final month = date.month.toString().padLeft(2, '0');
-      final year = date.year;
-      final hour = date.hour.toString().padLeft(2, '0');
-      final minute = date.minute.toString().padLeft(2, '0');
-      return '$day-$month-$year $hour:$minute';
-    } catch (e) {
-      return isoString;
-    }
-  }
+  final AnalysisData analysis;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stateGeneral =
-        analysis['diagnostico']['estado_global'] as String? ?? '';
-    final date = _formatDate(analysis['created_at'] as String? ?? '');
+    final stateGeneral = analysis.diagnosis['estado_global'] as String? ?? '';
+    final date = analysis.createdAt.toIso8601String().toFormattedDateTime();
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -83,7 +70,7 @@ class ClinicalResults extends ConsumerWidget {
                     text: stateGeneral == 'CRITICAL'
                         ? 'Crítico'
                         : stateGeneral == 'OBSERVATION'
-                            ? 'Monitoreo'
+                            ? 'Revisión'
                             : 'Normal',
                     style: AppFonts.body1.copyWith(
                         fontWeight: FontWeight.w600,
@@ -100,8 +87,8 @@ class ClinicalResults extends ConsumerWidget {
                   StatusHandlerFunction.handleStatus(
                     context: context,
                     action: ref
-                        .read(fireStorageAnalysisControllerProvider.notifier)
-                        .getUserAnalysisById(analysis['id']),
+                        .read(clinicalAnalysisControllerProvider.notifier)
+                        .getUserAnalysisById(analysis.id),
                     onSuccessCallBack: () {
                       PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
                         context,
