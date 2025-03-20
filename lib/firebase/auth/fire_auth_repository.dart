@@ -100,6 +100,22 @@ class FireAuthRepository {
         'monitor_weight': monitorWeight,
         'next_step': 'COMPLETED',
       });
+
+      // Add initial weight history record
+      final double bmi = height > 0
+          ? double.parse((weight / (height * height)).toStringAsFixed(2))
+          : 0;
+      final weightHistoryRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('weight_history')
+          .doc();
+      await weightHistoryRef.set({
+        'id': weightHistoryRef.id,
+        'weight': weight,
+        'bmi': bmi,
+        'created_at': DateTime.now().toIso8601String(),
+      });
     } catch (e) {
       rethrow;
     }

@@ -13,7 +13,7 @@ class WeightHistory {
 
   factory WeightHistory.fromMap(Map<String, dynamic> map) {
     return WeightHistory(
-      id: map['id'].toString(),
+      id: map['id']?.toString() ?? '',
       weight: double.parse(map['weight'].toString()),
       bmi: double.parse(map['bmi'].toString()),
       createdAt: map['created_at'] is DateTime

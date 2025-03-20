@@ -15,6 +15,7 @@ import 'package:mobile_preven_ia_app/screens/sign-up/sign_up_screen.dart';
 import 'package:mobile_preven_ia_app/screens/verify-email/verify_email_screen.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_error.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mobile_preven_ia_app/widgets/pvi_loader.dart';
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -66,10 +67,12 @@ class AuthStateHandler extends ConsumerWidget {
             ),
           ),
         );
+      } else if (authState is AsyncLoading) {
+        return const PviLoader();
       }
       if (authController.currentSession?.nextStep.step ==
           UserStepEnum.healthInfo) {
-        return const SignInScreen();
+        return const HealthInfoScreen();
       }
       return NavigationHandlerScreen();
     } else {

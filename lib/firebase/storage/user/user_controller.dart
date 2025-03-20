@@ -45,4 +45,24 @@ class UserController extends _$UserController {
       rethrow;
     }
   }
+
+  Future<void> updateMonitoringPreferences({
+    required bool monitorLdl,
+    required bool monitorGlucose,
+    required bool monitorWeight,
+  }) {
+    final uid = ref.read(fireAuthControllerProvider).value?.user.uid;
+    try {
+      return ref
+          .read(fireStorageRepositoryProvider)
+          .updateMonitoringPreferences(
+            uid ?? '',
+            monitorLdl: monitorLdl,
+            monitorGlucose: monitorGlucose,
+            monitorWeight: monitorWeight,
+          );
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

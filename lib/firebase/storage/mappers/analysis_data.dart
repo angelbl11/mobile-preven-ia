@@ -5,6 +5,7 @@ class AnalysisData {
   final Map<String, dynamic> exams;
   final Map<String, dynamic> diagnosis;
   final Map<String, dynamic> variables;
+  final Map<String, dynamic> models;
 
   AnalysisData({
     required this.id,
@@ -13,16 +14,37 @@ class AnalysisData {
     required this.exams,
     required this.diagnosis,
     required this.variables,
+    required this.models,
   });
 
   factory AnalysisData.fromMap(Map<String, dynamic> map) {
     return AnalysisData(
-      id: map['id'] as String,
-      userId: map['user_id'] as String,
-      createdAt: DateTime.parse(map['created_at'] as String),
-      exams: map['exams'] as Map<String, dynamic>,
-      diagnosis: map['diagnosis'] as Map<String, dynamic>,
-      variables: map['variables'] as Map<String, dynamic>,
+      id: map['id']?.toString() ?? '',
+      userId: map['user_id']?.toString() ?? '',
+      createdAt: DateTime.tryParse(map['created_at']?.toString() ?? '') ??
+          DateTime.now(),
+      exams: (map['exams'] as Map<String, dynamic>?) ?? {},
+      diagnosis: (map['diagnosis'] as Map<String, dynamic>?) ??
+          {
+            'global_status': 'ACCEPTABLE',
+            'observations': '',
+          },
+      variables: (map['variables'] as Map<String, dynamic>?) ?? {},
+      models: (map['models'] as Map<String, dynamic>?) ??
+          {
+            'diabetes': {
+              'risk': 'no_aplicable',
+              'probability': -1,
+            },
+            'hipertension': {
+              'risk': 'no_aplicable',
+              'probability': -1,
+            },
+            'obesidad': {
+              'risk': 'no_aplicable',
+              'probability': -1,
+            },
+          },
     );
   }
 
@@ -34,6 +56,7 @@ class AnalysisData {
       'exams': exams,
       'diagnosis': diagnosis,
       'variables': variables,
+      'models': models,
     };
   }
 }

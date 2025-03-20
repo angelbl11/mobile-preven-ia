@@ -24,25 +24,33 @@ class ProcessInfoController extends _$ProcessInfoController {
 
   DateTime? _parseBirthDate(String? birthDateStr) {
     if (birthDateStr == null || birthDateStr.isEmpty) return null;
+    // Debug log
     try {
-      final parts = birthDateStr.split('/');
+      final parts = birthDateStr.split('-');
       if (parts.length != 3) return null;
+      // Debug log
       final day = int.parse(parts[0]);
       final month = int.parse(parts[1]);
       final year = int.parse(parts[2]);
-      return DateTime(year, month, day);
+      final parsedDate = DateTime(year, month, day);
+      // Debug log
+      return parsedDate;
     } catch (e) {
+      // Debug log
       return null;
     }
   }
 
   int _calculateAge(DateTime birthDate) {
     final now = DateTime.now();
+    // Debug log
+    // Debug log
     int age = now.year - birthDate.year;
     if (now.month < birthDate.month ||
         (now.month == birthDate.month && now.day < birthDate.day)) {
       age--;
     }
+    // Debug log
     return age;
   }
 
@@ -52,9 +60,9 @@ class ProcessInfoController extends _$ProcessInfoController {
 
   Future<AnalysisData?> analyzeTextWithoutModel(String plainText) async {
     try {
-      final gemini = ref.read(geminiControllerProvider);
+      final gemini = ref.read(geminiControllerProvider.notifier);
       final extractionResponse = await gemini.prompt(
-        parts: [
+        [
           Part.text(extractionPrompt),
           Part.text(plainText),
         ],
@@ -70,24 +78,53 @@ class ProcessInfoController extends _$ProcessInfoController {
 
       final modifiedAnalyzePrompt = analyzeWithoutModelPrompt
           .replaceAll('valor_de_IMC', userProfile?.bmi.toString() ?? '0')
-          .replaceAll('valor_de_sexo', parseGender(userProfile?.gender ?? 'M'))
+          .replaceAll(
+              'valor_de_sexo', parseGender(userProfile?.gender ?? 'MALE'))
           .replaceAll('valor_de_edad', age.toString());
 
-      final analysisResponse = await gemini.prompt(
-        parts: [
-          Part.text(modifiedAnalyzePrompt),
-          Part.text(extractionResponse?.output ?? ''),
-        ],
-      );
+      final analysisResponse = await gemini.prompt([
+        Part.text(modifiedAnalyzePrompt),
+        Part.text(extractionResponse),
+      ]);
 
-      final analysisOutput = analysisResponse?.output;
+      if (analysisResponse.isEmpty) {
+        throw Exception('La respuesta del análisis está vacía');
+      }
+
       final currentUser = ref.read(fireAuthControllerProvider).value?.user;
-      if (analysisOutput != null && currentUser != null) {
-        final persistedAnalysis = await ref
-            .read(clinicalAnalysisControllerProvider.notifier)
-            .createUserAnalysis(currentUser.uid, analysisOutput);
-        state = AsyncData(persistedAnalysis);
-        return persistedAnalysis;
+      if (currentUser != null) {
+        // Remove markdown and clean response
+        String cleanResponse =
+            analysisResponse.replaceAll(RegExp(r'```json\n?'), '');
+        cleanResponse = cleanResponse.replaceAll(RegExp(r'```\n?'), '');
+        cleanResponse = cleanResponse.trim();
+
+        // Handle truncated JSON
+        if (!cleanResponse.endsWith('}')) {
+          // Find the last complete exam entry
+          final lastCompleteExam =
+              RegExp(r'.*},[^}]*$').firstMatch(cleanResponse);
+          if (lastCompleteExam != null) {
+            // Truncate at the last complete exam and close the JSON structure
+            cleanResponse = '${lastCompleteExam.group(0)}}}}';
+          } else {
+            // If we can't find a clean cut point, throw an error
+            throw Exception(
+                'No se pudo procesar la respuesta completa. Por favor, intente con menos parámetros.');
+          }
+        }
+
+        try {
+          // Validate JSON before parsing
+
+          final persistedAnalysis = await ref
+              .read(clinicalAnalysisControllerProvider.notifier)
+              .createUserAnalysis(currentUser.uid, cleanResponse);
+          state = AsyncData(persistedAnalysis);
+          return persistedAnalysis;
+        } catch (e) {
+          rethrow;
+        }
       }
     } catch (e) {
       rethrow;
@@ -143,36 +180,63 @@ class ProcessInfoController extends _$ProcessInfoController {
       final exams = extractedData;
 
       final userProfile = await ref.read(userControllerProvider.future);
+      // Debug log
 
       int age = 0;
       final birthDate = _parseBirthDate(userProfile?.birthDate);
       if (birthDate != null) {
         age = _calculateAge(birthDate);
       }
+      // Debug log
 
-      final finalLDL =
-          _getValueFromExamMultiple(exams, ['ldl', 'colesterol ldl directo']) ??
-              num.parse(parameterValues['ldl'] ?? '0').toDouble();
+      final gender = (userProfile?.gender ?? 'MALE').toLowerCase();
+
+      final finalLDL = _getValueFromExamMultiple(
+              exams, ['ldl', 'colesterol ldl directo']) ??
+          (parameterValues['ldl'] != null && parameterValues['ldl']!.isNotEmpty
+              ? num.tryParse(parameterValues['ldl']!)?.toDouble() ?? 0.0
+              : 0.0);
       final finalTriglycerides = _getValueFromExamMultiple(
               exams, ['trigliceridos', 'triglicéridos']) ??
-          num.parse(parameterValues['triglicéridos'] ?? '0').toDouble();
+          (parameterValues['triglicéridos'] != null &&
+                  parameterValues['triglicéridos']!.isNotEmpty
+              ? num.tryParse(parameterValues['triglicéridos']!)?.toDouble() ??
+                  0.0
+              : 0.0);
       final finalFastingGlucose =
           _getValueFromExamMultiple(exams, ['glucosa en ayunas', 'glucosa']) ??
-              num.parse(parameterValues['glucosa'] ?? '0').toDouble();
-      final finalCreatinine =
-          _getValueFromExamMultiple(exams, ['creatinina']) ??
-              num.parse(parameterValues['creatinina'] ?? '0').toDouble();
+              (parameterValues['glucosa'] != null &&
+                      parameterValues['glucosa']!.isNotEmpty
+                  ? num.tryParse(parameterValues['glucosa']!)?.toDouble() ?? 0.0
+                  : 0.0);
+      final finalCreatinine = _getValueFromExamMultiple(
+              exams, ['creatinina']) ??
+          (parameterValues['creatinina'] != null &&
+                  parameterValues['creatinina']!.isNotEmpty
+              ? num.tryParse(parameterValues['creatinina']!)?.toDouble() ?? 0.0
+              : 0.0);
       final finalSystolicPressure =
           _getValueFromExamMultiple(exams, ['presión arterial sistólica']) ??
-              num.parse(parameterValues['presión arterial sistólica'] ?? '0')
-                  .toDouble();
-      final finalDiastolicPressure =
-          _getValueFromExamMultiple(exams, ['presión arterial diastólica']) ??
-              num.parse(parameterValues['presión arterial diastólica'] ?? '0')
-                  .toDouble();
+              (parameterValues['presión arterial sistólica'] != null &&
+                      parameterValues['presión arterial sistólica']!.isNotEmpty
+                  ? num.tryParse(parameterValues['presión arterial sistólica']!)
+                          ?.toDouble() ??
+                      0.0
+                  : 0.0);
+      final finalDiastolicPressure = _getValueFromExamMultiple(
+              exams, ['presión arterial diastólica']) ??
+          (parameterValues['presión arterial diastólica'] != null &&
+                  parameterValues['presión arterial diastólica']!.isNotEmpty
+              ? num.tryParse(parameterValues['presión arterial diastólica']!)
+                      ?.toDouble() ??
+                  0.0
+              : 0.0);
 
       final finalHbA1c = _getValueFromExamMultiple(exams, ['hba1c']) ??
-          num.parse(parameterValues['hba1c'] ?? '0').toDouble();
+          (parameterValues['hba1c'] != null &&
+                  parameterValues['hba1c']!.isNotEmpty
+              ? num.tryParse(parameterValues['hba1c']!)?.toDouble() ?? 0.0
+              : 0.0);
 
       // Llamadas a los modelos premium:
       final obesityPrediction =
@@ -180,7 +244,7 @@ class ProcessInfoController extends _$ProcessInfoController {
                 userProfile?.bmi ?? 0,
                 finalLDL,
                 finalTriglycerides,
-                userProfile?.gender ?? 'male',
+                gender,
                 age,
                 userProfile?.isGeneticRiskObesity ?? false,
               );
@@ -190,7 +254,7 @@ class ProcessInfoController extends _$ProcessInfoController {
                 finalFastingGlucose,
                 finalHbA1c,
                 userProfile?.isGeneticRiskDiabetes ?? false,
-                userProfile?.gender ?? 'male',
+                gender,
                 age,
                 userProfile?.bmi ?? 0,
               );
@@ -203,7 +267,7 @@ class ProcessInfoController extends _$ProcessInfoController {
             finalCreatinine,
             finalLDL,
             userProfile?.isGeneticRiskHypertension ?? false,
-            userProfile?.gender ?? 'male',
+            gender,
             age,
             userProfile?.bmi ?? 0,
           );
@@ -218,8 +282,7 @@ class ProcessInfoController extends _$ProcessInfoController {
 
       final modifiedAnalyzePrompt = analyzeWithModelPrompt
           .replaceAll('valor_de_IMC', userProfile?.bmi.toString() ?? '0')
-          .replaceAll(
-              'valor_de_sexo', parseGender(userProfile?.gender ?? 'Masculino'))
+          .replaceAll('valor_de_sexo', parseGender(gender))
           .replaceAll('valor_de_edad', age.toString());
 
       final analysisResponse = await gemini.prompt([
@@ -228,15 +291,22 @@ class ProcessInfoController extends _$ProcessInfoController {
         Part.text(predictionsJson),
       ]);
 
-      final analysisOutput = analysisResponse;
+      if (analysisResponse.isEmpty) {
+        throw Exception('La respuesta del análisis está vacía');
+      }
+
       final currentUser = ref.read(fireAuthControllerProvider).value?.user;
       if (currentUser != null) {
-        final persistedAnalysis = await ref
-            .read(clinicalAnalysisControllerProvider.notifier)
-            .createUserAnalysis(currentUser.uid, analysisOutput);
-
-        state = AsyncData(persistedAnalysis);
-        return persistedAnalysis;
+        final sanitizedOutput = sanitizeJson(analysisResponse);
+        try {
+          final persistedAnalysis = await ref
+              .read(clinicalAnalysisControllerProvider.notifier)
+              .createUserAnalysis(currentUser.uid, sanitizedOutput);
+          state = AsyncData(persistedAnalysis);
+          return persistedAnalysis;
+        } catch (e) {
+          rethrow;
+        }
       }
     } catch (e) {
       rethrow;
