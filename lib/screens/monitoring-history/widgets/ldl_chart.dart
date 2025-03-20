@@ -20,11 +20,14 @@ class LDLChart extends StatelessWidget {
       primaryXAxis: DateTimeAxis(
         edgeLabelPlacement: EdgeLabelPlacement.shift,
         dateFormat: DateFormat('dd-MM HH:mm'),
+        intervalType: DateTimeIntervalType.auto,
       ),
       primaryYAxis: NumericAxis(
         title: AxisTitle(
             text: 'LDL (mg/dL)',
             textStyle: AppFonts.headline3.copyWith(fontSize: 14)),
+        minimum: 0,
+        interval: 20,
       ),
       series: <CartesianSeries<MonitoringData, DateTime>>[
         LineSeries<MonitoringData, DateTime>(
@@ -32,8 +35,15 @@ class LDLChart extends StatelessWidget {
           xValueMapper: (MonitoringData point, _) => point.date,
           yValueMapper: (MonitoringData point, _) => point.ldl,
           name: 'LDL',
-          markerSettings: const MarkerSettings(isVisible: true),
-          dataLabelSettings: const DataLabelSettings(isVisible: true),
+          markerSettings: const MarkerSettings(
+            isVisible: true,
+            height: 8,
+            width: 8,
+          ),
+          dataLabelSettings: const DataLabelSettings(
+            isVisible: true,
+            labelAlignment: ChartDataLabelAlignment.top,
+          ),
         ),
       ],
     );

@@ -3,10 +3,14 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
+import 'package:mobile_preven_ia_app/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/screens/manual-parameters/manual_parameters_screen.dart';
 import 'package:mobile_preven_ia_app/screens/processing-file/processing_file_screen.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text_button.dart';
+import 'package:mobile_preven_ia_app/widgets/pvi_weight_update_modal.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/user/user_controller.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
@@ -14,15 +18,52 @@ import 'package:mobile_preven_ia_app/widgets/pvi_button.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
 import 'package:material_dialogs/material_dialogs.dart';
 
-class UploadFileScreen extends StatefulWidget {
+class UploadFileScreen extends ConsumerStatefulWidget {
   const UploadFileScreen({super.key});
 
   @override
-  State<UploadFileScreen> createState() => _UploadFileScreenState();
+  ConsumerState<UploadFileScreen> createState() => _UploadFileScreenState();
 }
 
-class _UploadFileScreenState extends State<UploadFileScreen> {
+class _UploadFileScreenState extends ConsumerState<UploadFileScreen> {
   List<String> _missingParameters = [];
+
+  void _proceedToProcessingScreen(String extractedText,
+      {bool isUsingModel = false}) {
+    PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+      context,
+      screen: const ProcessingFileScreen(),
+      withNavBar: false,
+      pageTransitionAnimation: PageTransitionAnimation.fade,
+      settings: RouteSettings(
+        arguments: {
+          'extractedText': extractedText,
+          'isUsingModel': isUsingModel,
+        },
+      ),
+    );
+  }
+
+  void _showWeightUpdateDialog(String extractedText,
+      {bool isUsingModel = false}) {
+    ref.read(userControllerProvider).whenData((userProfile) {
+      if (userProfile != null) {
+        showDialog(
+          context: context,
+          builder: (context) => PviWeightUpdateModal(
+            currentWeight: userProfile.weight,
+            showSkipButton: true,
+            onWeightUpdated: () {
+              _proceedToProcessingScreen(extractedText,
+                  isUsingModel: isUsingModel);
+            },
+          ),
+        );
+      } else {
+        _proceedToProcessingScreen(extractedText, isUsingModel: isUsingModel);
+      }
+    });
+  }
 
   Future<void> _pickAndExtractPdf() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -70,6 +111,7 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
             Column(
               children: [
                 PviTextButton(
+                  textStyle: AppFonts.button1.copyWith(color: AppColors.gray5),
                   text: "Ingresar manualmente",
                   onPressed: () {
                     PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
@@ -89,24 +131,15 @@ class _UploadFileScreenState extends State<UploadFileScreen> {
                 PviTextButton(
                   text: "Continuar",
                   onPressed: () {
-                    PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
-                      context,
-                      screen: const ProcessingFileScreen(),
-                      withNavBar: false,
-                      pageTransitionAnimation: PageTransitionAnimation.fade,
-                      settings: RouteSettings(
-                        arguments: {
-                          'extractedText': extractedText,
-                          'isUsingModel': false,
-                        },
-                      ),
-                    );
+                    _showWeightUpdateDialog(extractedText);
                   },
                 )
               ],
             ),
           ],
         );
+      } else {
+        _showWeightUpdateDialog(extractedText, isUsingModel: true);
       }
     }
   }

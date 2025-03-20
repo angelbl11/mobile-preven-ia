@@ -10,6 +10,7 @@ import 'package:mobile_preven_ia_app/functions/status_handler_function.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/screens/analysis-details/analysis_details_screen.dart';
+import 'package:mobile_preven_ia_app/screens/analysis-details/models/analysis_details_arguments.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
@@ -23,7 +24,8 @@ class ClinicalResults extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stateGeneral = analysis.diagnosis['estado_global'] as String? ?? '';
+    final stateGeneral =
+        analysis.diagnosis['global_status'] as String? ?? 'ACCEPTABLE';
     final date = analysis.createdAt.toIso8601String().toFormattedDateTime();
     return Container(
       padding: const EdgeInsets.all(16),
@@ -96,9 +98,9 @@ class ClinicalResults extends ConsumerWidget {
                         withNavBar: false,
                         pageTransitionAnimation: PageTransitionAnimation.fade,
                         settings: RouteSettings(
-                          arguments: {
-                            'analysis': analysis,
-                          },
+                          arguments: AnalysisDetailsArguments(
+                            analysis: analysis,
+                          ).toMap(),
                         ),
                       );
                     },

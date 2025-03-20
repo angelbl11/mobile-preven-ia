@@ -364,6 +364,197 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                       ),
                       PviText(
+                        text: 'Parámetros monitoreados',
+                        style: AppFonts.headline3,
+                      ),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.gray4,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          spacing: 8,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                PviText(
+                                  text: 'Parámetros que monitoreas',
+                                  style: AppFonts.body1.copyWith(
+                                      fontSize: 14,
+                                      color: AppColors.gray5,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    LucideIcons.settings,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        bool tempMonitorLDL =
+                                            userProfile.monitorLdl;
+                                        bool tempMonitorGlucose =
+                                            userProfile.monitorGlucose;
+                                        bool tempMonitorWeight =
+                                            userProfile.monitorWeight;
+
+                                        return AlertDialog(
+                                          backgroundColor: AppColors.background,
+                                          title: PviText(
+                                            text:
+                                                'Editar parámetros monitoreados',
+                                            style: AppFonts.headline2,
+                                          ),
+                                          content: StatefulBuilder(
+                                            builder: (BuildContext context,
+                                                StateSetter setState) {
+                                              return Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  CheckboxListTile(
+                                                    title: PviText(
+                                                      text:
+                                                          'LDL (Colesterol malo)',
+                                                      style: AppFonts.body1,
+                                                    ),
+                                                    value: tempMonitorLDL,
+                                                    onChanged: (bool? value) {
+                                                      setState(() {
+                                                        tempMonitorLDL =
+                                                            value ?? false;
+                                                      });
+                                                    },
+                                                    activeColor:
+                                                        AppColors.primary,
+                                                  ),
+                                                  CheckboxListTile(
+                                                    title: PviText(
+                                                      text: 'Glucosa',
+                                                      style: AppFonts.body1,
+                                                    ),
+                                                    value: tempMonitorGlucose,
+                                                    onChanged: (bool? value) {
+                                                      setState(() {
+                                                        tempMonitorGlucose =
+                                                            value ?? false;
+                                                      });
+                                                    },
+                                                    activeColor:
+                                                        AppColors.primary,
+                                                  ),
+                                                  CheckboxListTile(
+                                                    title: PviText(
+                                                      text: 'Peso (kg)',
+                                                      style: AppFonts.body1,
+                                                    ),
+                                                    value: tempMonitorWeight,
+                                                    onChanged: (bool? value) {
+                                                      setState(() {
+                                                        tempMonitorWeight =
+                                                            value ?? false;
+                                                      });
+                                                    },
+                                                    activeColor:
+                                                        AppColors.primary,
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          ),
+                                          actions: [
+                                            PviTextButton(
+                                              textStyle: AppFonts.button1
+                                                  .copyWith(
+                                                      color: AppColors.gray5),
+                                              text: 'Cancelar',
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                            ),
+                                            PviTextButton(
+                                              text: 'Guardar',
+                                              onPressed: () {
+                                                StatusHandlerFunction
+                                                    .handleStatus(
+                                                  context: context,
+                                                  action: ref
+                                                      .read(
+                                                          userControllerProvider
+                                                              .notifier)
+                                                      .updateMonitoringPreferences(
+                                                        monitorLdl:
+                                                            tempMonitorLDL,
+                                                        monitorGlucose:
+                                                            tempMonitorGlucose,
+                                                        monitorWeight:
+                                                            tempMonitorWeight,
+                                                      ),
+                                                  onSuccessCallBack: () {
+                                                    ref.invalidate(
+                                                        userControllerProvider);
+                                                    showToast(
+                                                      status:
+                                                          MessageStatus.success,
+                                                      context: context,
+                                                      message:
+                                                          'Preferencias actualizadas correctamente',
+                                                    );
+                                                    Navigator.pop(context);
+                                                  },
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                            Visibility(
+                              visible: userProfile.monitorLdl,
+                              child: PviText(
+                                text: '- LDL (Colesterol malo)',
+                                style: AppFonts.body1,
+                              ),
+                            ),
+                            Visibility(
+                              visible: userProfile.monitorGlucose,
+                              child: PviText(
+                                text: '- Glucosa',
+                                style: AppFonts.body1,
+                              ),
+                            ),
+                            Visibility(
+                              visible: userProfile.monitorWeight,
+                              child: PviText(
+                                text: '- Peso (kg)',
+                                style: AppFonts.body1,
+                              ),
+                            ),
+                            Visibility(
+                              visible: !userProfile.monitorLdl &&
+                                  !userProfile.monitorGlucose &&
+                                  !userProfile.monitorWeight,
+                              child: PviText(
+                                text: 'No hay parámetros seleccionados',
+                                style: AppFonts.body1.copyWith(
+                                  color: AppColors.gray5,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      PviText(
                         text: 'Configuración de cuenta',
                         style: AppFonts.headline3,
                       ),

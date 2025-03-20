@@ -72,22 +72,24 @@ class _SignInFormState extends ConsumerState<SignInForm> {
           step = res?.nextStep;
         }(),
         onSuccessCallBack: () {
-          if (step?.step == UserStepEnum.healthInfo) {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const HealthInfoScreen(),
-              ),
-              (route) => false,
-            );
-          } else {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => NavigationHandlerScreen(),
-              ),
-              (route) => false,
-            );
+          if (mounted) {
+            if (step?.step == UserStepEnum.healthInfo) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HealthInfoScreen(),
+                ),
+                (route) => false,
+              );
+            } else {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NavigationHandlerScreen(),
+                ),
+                (route) => false,
+              );
+            }
           }
         },
       );

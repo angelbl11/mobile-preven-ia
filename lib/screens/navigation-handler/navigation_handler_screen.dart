@@ -1,15 +1,18 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/user/user_controller.dart';
 import 'package:mobile_preven_ia_app/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/screens/home/home_screen.dart';
 import 'package:mobile_preven_ia_app/screens/monitoring-history/monitoring_history_screen.dart';
 import 'package:mobile_preven_ia_app/screens/upload-file/upload_file_screen.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:mobile_preven_ia_app/firebase/storage/clinical-analysis/clinical_analysis_controller.dart';
+import 'package:mobile_preven_ia_app/gemini/controllers/process_info_controller.dart';
 
-class NavigationHandlerScreen extends StatelessWidget {
+class NavigationHandlerScreen extends ConsumerWidget {
   NavigationHandlerScreen({super.key});
 
   final PersistentTabController _controller =
@@ -44,7 +47,7 @@ class NavigationHandlerScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return PersistentTabView(
       context,
       controller: _controller,
@@ -69,6 +72,11 @@ class NavigationHandlerScreen extends StatelessWidget {
         colorBehindNavBar: Colors.transparent,
       ),
       navBarStyle: NavBarStyle.style15,
+      onItemSelected: (index) {
+        ref.invalidate(clinicalAnalysisControllerProvider);
+        ref.invalidate(userControllerProvider);
+        ref.invalidate(processInfoControllerProvider);
+      },
     );
   }
 }

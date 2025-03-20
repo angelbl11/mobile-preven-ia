@@ -15,8 +15,12 @@ class MonitoringData {
       date: map['date'] is DateTime
           ? map['date']
           : DateTime.parse(map['date'].toString()),
-      glucose: double.parse(map['glucose'].toString()),
-      ldl: double.parse(map['ldl'].toString()),
+      glucose: map['glucose'] == null
+          ? 0.0
+          : double.tryParse(map['glucose'].toString()) ?? 0.0,
+      ldl: map['ldl'] == null
+          ? 0.0
+          : double.tryParse(map['ldl'].toString()) ?? 0.0,
     );
   }
 }

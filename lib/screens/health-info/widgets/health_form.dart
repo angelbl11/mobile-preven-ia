@@ -12,9 +12,11 @@ import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/screens/health-info/models/health_form_field.dart';
 import 'package:mobile_preven_ia_app/screens/health-info/widgets/health_monitoring_checkboxes.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_form_button.dart';
+import 'package:mobile_preven_ia_app/widgets/pvi_info_message.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
 import 'package:mobile_preven_ia_app/widgets/pvi_text_input.dart';
 import 'package:mobile_preven_ia_app/screens/health-info/widgets/health_conditions_checkboxes.dart';
+import 'package:mobile_preven_ia_app/screens/navigation-handler/navigation_handler_screen.dart';
 
 class HealthForm extends ConsumerStatefulWidget {
   const HealthForm({super.key});
@@ -193,13 +195,21 @@ class _HealthFormState extends ConsumerState<HealthForm> {
               monitorGlucose: _monitorGlucose,
               monitorWeight: _monitorWeight,
             ),
-        onSuccessCallBack: () {
+        onSuccessCallBack: () async {
           showToast(
             status: MessageStatus.success,
             context: context,
             message: 'Perfil completado exitosamente',
           );
-          Navigator.pushNamed(context, '/');
+          if (mounted) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => NavigationHandlerScreen(),
+              ),
+              (route) => false,
+            );
+          }
         },
       );
     }
@@ -240,37 +250,6 @@ class _HealthFormState extends ConsumerState<HealthForm> {
                 onTap: field.onTap,
                 validator: field.validator,
               )),
-          Row(
-            spacing: 8,
-            children: [
-              Expanded(
-                child: PviTextInput(
-                  controller: _weightController,
-                  keyboardType: TextInputType.text,
-                  label: 'Peso (kg)',
-                  prefixIcon: const Icon(
-                    CommunityMaterialIcons.weight_kilogram,
-                    color: AppColors.primary,
-                    size: 18,
-                  ),
-                  validator: _validateWeight,
-                ),
-              ),
-              Expanded(
-                child: PviTextInput(
-                  controller: _heightController,
-                  keyboardType: TextInputType.text,
-                  label: 'Estatura (m)',
-                  prefixIcon: const Icon(
-                    CommunityMaterialIcons.human_male_height,
-                    color: AppColors.primary,
-                    size: 18,
-                  ),
-                  validator: _validateHeight,
-                ),
-              ),
-            ],
-          ),
           SizedBox(
             width: double.infinity,
             child: ToggleButtons(
@@ -355,28 +334,9 @@ class _HealthFormState extends ConsumerState<HealthForm> {
                 setState(() => _monitorGlucose = value),
             onWeightChanged: (value) => setState(() => _monitorWeight = value),
           ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.gray4,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              spacing: 8,
-              children: [
-                const Icon(
-                  LucideIcons.info,
-                  color: AppColors.primary,
-                ),
-                Expanded(
-                  child: PviText(
-                    text:
-                        'Esta información nos ayuda a otorgarte resultados más precisos y personalizados en base a tus condiciones médicas',
-                    style: AppFonts.body1,
-                  ),
-                ),
-              ],
-            ),
+          const PviInfoMessage(
+            message:
+                'Esta información nos ayuda a otorgarte resultados más precisos y personalizados en base a tus condiciones médicas',
           ),
           PviFormButton(
             onSubmit: _submit,

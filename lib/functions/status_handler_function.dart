@@ -35,7 +35,7 @@ class StatusHandlerFunction {
         errorMessage =
             e.message ?? 'Oops! Ocurrió un error en la base de datos.';
       } else {
-        errorMessage = 'Oops! Ocurrió un error inesperado.';
+        errorMessage = e.toString();
       }
 
       // Close the loader dialog if still open

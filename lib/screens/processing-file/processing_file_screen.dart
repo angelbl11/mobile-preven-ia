@@ -29,13 +29,28 @@ class ProcessingFileScreenState extends ConsumerState<ProcessingFileScreen> {
               {};
       final extractedText = args['extractedText'] as String? ?? '';
       final isUsingModel = args['isUsingModel'] as bool? ?? false;
-      final parameterValues =
-          args['parameterValues'] as Map<String, String>? ?? {};
+      final rawParameterValues = args['parameterValues'];
+
+      // Debug prints
+
+      // Ensure parameterValues is a Map and handle null values
+      Map<String, dynamic> parameterValues = {};
+      if (rawParameterValues is Map) {
+        parameterValues = Map<String, dynamic>.from(rawParameterValues);
+      }
+
+      // Ensure all parameter values are strings and not null
+      final sanitizedParameterValues = <String, String>{};
+      parameterValues.forEach((key, value) {
+        if (value != null) {
+          sanitizedParameterValues[key.toString()] = value.toString();
+        }
+      });
 
       _processInfoFuture = isUsingModel
           ? ref
               .read(processInfoControllerProvider.notifier)
-              .analyzeTextWithModel(extractedText, parameterValues)
+              .analyzeTextWithModel(extractedText, sanitizedParameterValues)
           : ref
               .read(processInfoControllerProvider.notifier)
               .analyzeTextWithoutModel(extractedText);
@@ -48,16 +63,65 @@ class ProcessingFileScreenState extends ConsumerState<ProcessingFileScreen> {
     return FutureBuilder(
       future: _processInfoFuture,
       builder: (context, snapshot) {
-        if (snapshot.hasData && !_hasNavigated) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return SafeArea(
+            child: Scaffold(
+              body: Center(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 32),
+                  child: Column(
+                    spacing: 22,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Lottie.asset(
+                        'assets/lotties/processing-file.json',
+                        width: 180,
+                        height: 180,
+                      ),
+                      PviText(
+                        text: 'Analizando parámetros clínicos',
+                        style: AppFonts.headline2,
+                      ),
+                      PviText(
+                        text: 'Esto puede tomar unos minutos',
+                        style: AppFonts.caption,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return PviError(
+            customMessage:
+                'Error al analizar los parámetros: ${snapshot.error}',
+          );
+        }
+
+        final analysisData = snapshot.data;
+        if (analysisData == null) {
+          return const PviError(
+            customMessage: 'No se pudo obtener el análisis de los parámetros',
+          );
+        }
+
+        if (!_hasNavigated) {
           _hasNavigated = true;
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            // Ensure all data is properly formatted before passing
+            final analysisMap = analysisData.toMap();
+
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
                 builder: (context) => const AnalysisDetailsScreen(),
                 settings: RouteSettings(
                   arguments: {
-                    'analysis': snapshot.data,
+                    'analysis': analysisMap,
                   },
                 ),
               ),
@@ -66,41 +130,8 @@ class ProcessingFileScreenState extends ConsumerState<ProcessingFileScreen> {
           });
           return const SizedBox.shrink();
         }
-        if (snapshot.hasError) {
-          return PviError(
-            customMessage:
-                'Error al analizar los parámetros: ${snapshot.error}',
-          );
-        }
-        return SafeArea(
-          child: Scaffold(
-            body: Center(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 32),
-                child: Column(
-                  spacing: 22,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Lottie.asset(
-                      'assets/lotties/processing-file.json',
-                      width: 180,
-                      height: 180,
-                    ),
-                    PviText(
-                      text: 'Analizando parámetros clínicos',
-                      style: AppFonts.headline2,
-                    ),
-                    PviText(
-                      text: 'Esto puede tomar unos minutos',
-                      style: AppFonts.caption,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
+
+        return const SizedBox.shrink();
       },
     );
   }

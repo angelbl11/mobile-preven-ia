@@ -29,8 +29,23 @@ class FireStorageRepository {
   Future<AnalysisData> createUserAnalysis(String uid, String analysis) async {
     try {
       final sanitizedAnalysis = sanitizeJson(analysis);
+
       Map<String, dynamic> analysisMap =
           json.decode(sanitizedAnalysis) as Map<String, dynamic>;
+
+      // Validate required fields
+      if (!analysisMap.containsKey('exams')) {
+        throw Exception('El análisis no contiene la sección de exámenes');
+      }
+      if (!analysisMap.containsKey('diagnosis')) {
+        throw Exception('El análisis no contiene la sección de diagnóstico');
+      }
+      if (!analysisMap.containsKey('variables')) {
+        throw Exception('El análisis no contiene la sección de variables');
+      }
+      if (!analysisMap.containsKey('models')) {
+        throw Exception('El análisis no contiene la sección de modelos');
+      }
 
       final analysisRef =
           _firestore.collection('users').doc(uid).collection('analysis').doc();
@@ -43,6 +58,7 @@ class FireStorageRepository {
         exams: analysisMap['exams'] as Map<String, dynamic>,
         diagnosis: analysisMap['diagnosis'] as Map<String, dynamic>,
         variables: analysisMap['variables'] as Map<String, dynamic>,
+        models: analysisMap['models'] as Map<String, dynamic>,
       );
 
       await analysisRef.set(analysisData.toMap());
@@ -186,6 +202,23 @@ class FireStorageRepository {
         'weight': newWeight,
         'bmi': newBMI,
         'created_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateMonitoringPreferences(
+    String uid, {
+    required bool monitorLdl,
+    required bool monitorGlucose,
+    required bool monitorWeight,
+  }) async {
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'monitor_ldl': monitorLdl,
+        'monitor_glucose': monitorGlucose,
+        'monitor_weight': monitorWeight,
       });
     } catch (e) {
       rethrow;
