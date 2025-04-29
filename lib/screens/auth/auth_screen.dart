@@ -1,11 +1,14 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mobile_preven_ia_app/core/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/screens/auth/widgets/sign_in_form.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_scaffold.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
+import 'package:mobile_preven_ia_app/screens/legal-text/legal_text_screen.dart';
+import 'package:mobile_preven_ia_app/screens/legal-text/text/terms_and_conditions.dart';
+import 'package:mobile_preven_ia_app/screens/legal-text/text/privacy_policy.dart';
+import 'package:page_transition/page_transition.dart';
 
 class AuthScreen extends StatelessWidget {
   const AuthScreen({super.key});
@@ -20,13 +23,9 @@ class AuthScreen extends StatelessWidget {
             spacing: 32,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SvgPicture.asset(
-                colorFilter: const ColorFilter.mode(
-                  AppColors.primary,
-                  BlendMode.srcIn,
-                ),
-                'assets/images/logo-isotype.svg',
-                width: 120,
+              Image.asset(
+                'assets/images/logo.png',
+                width: double.infinity,
                 height: 120,
               )
                   .animate()
@@ -192,7 +191,15 @@ class AuthScreen extends StatelessWidget {
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            // TODO: Navegar a Términos y condiciones
+                            Navigator.push(
+                              context,
+                              PageTransition(
+                                type: PageTransitionType.rightToLeft,
+                                child: const LegalTextScreen(
+                                    title: 'Términos y condiciones',
+                                    content: termsAndConditions),
+                              ),
+                            );
                           },
                       ),
                       const TextSpan(text: ' y '),
@@ -203,7 +210,15 @@ class AuthScreen extends StatelessWidget {
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            // TODO: Navegar a Aviso de privacidad
+                            Navigator.push(
+                              context,
+                              PageTransition(
+                                type: PageTransitionType.rightToLeft,
+                                child: const LegalTextScreen(
+                                    title: 'Aviso de privacidad',
+                                    content: privacyPolicy),
+                              ),
+                            );
                           },
                       ),
                     ],

@@ -1,9 +1,11 @@
+import 'package:mobile_preven_ia_app/core/domain/models/health_prediction.dart';
+
 class HealthFile {
   final String id;
   final String fileName;
   final DateTime uploadDate;
   final String processedText;
-  final String geminiAnalysis;
+  final HealthPrediction geminiAnalysis;
   final String documentId;
 
   HealthFile({

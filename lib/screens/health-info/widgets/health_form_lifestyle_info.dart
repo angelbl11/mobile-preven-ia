@@ -39,7 +39,6 @@ class _HealthFormLifestyleInfoState
 
   // Smoking status
   bool _isSmoker = false;
-  int _cigarettesPerDay = 0;
 
   // Alcohol consumption
   double _alcoholConsumption = 0.0;
@@ -107,25 +106,10 @@ class _HealthFormLifestyleInfoState
               onChanged: (value) {
                 setState(() {
                   _isSmoker = value ?? false;
-                  if (!_isSmoker) _cigarettesPerDay = 0;
                 });
               },
             ),
-            if (_isSmoker) ...[
-              const SizedBox(height: 16),
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Cigarrillos al día',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                onChanged: (value) {
-                  setState(() {
-                    _cigarettesPerDay = int.tryParse(value) ?? 0;
-                  });
-                },
-              ),
-            ],
+
             const SizedBox(height: 24),
 
             // Alcohol consumption
@@ -172,7 +156,7 @@ class _HealthFormLifestyleInfoState
                       final lifestyle = Lifestyle(
                         physicalActivity:
                             _activityLevels[_physicalActivityLevel.toInt()],
-                        smoker: _cigarettesPerDay,
+                        smoker: _isSmoker ? 1 : 0,
                         alcoholConsumption:
                             _alcoholLevels[_alcoholConsumption.toInt()],
                       );

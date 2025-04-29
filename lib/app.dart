@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mobile_preven_ia_app/core/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/core/routes/app_routes.dart';
-import 'package:page_transition/page_transition.dart';
 
 /// The main entry point for the application.
 class App extends StatelessWidget {

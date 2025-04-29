@@ -183,34 +183,41 @@ class _HealthFormPersonalInfoState
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
-      child: Column(
-          spacing: 32,
+      child: SingleChildScrollView(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 32),
             const PviText(
               text: 'Información personal',
               variant: TextVariant.headline2,
             ),
+            const SizedBox(height: 8),
             const PviText(
               text: 'Por favor, ingresa tus datos personales',
               variant: TextVariant.body1,
             ),
-            ..._formFields.values.map((field) => PviTextInput(
-                  controller: field.controller,
-                  keyboardType: field.keyboardType,
-                  label: field.label,
-                  prefixIcon: field.prefixIcon != null
-                      ? Icon(
-                          field.prefixIcon,
-                          color: AppColors.primary,
-                          size: 18,
-                        )
-                      : null,
-                  readOnly: field.readOnly,
-                  onTap: field.onTap,
-                  validator: field.validator,
-                  onChanged: (_) => field.onChanged?.call(),
+            const SizedBox(height: 32),
+            ..._formFields.values.map((field) => Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: PviTextInput(
+                    controller: field.controller,
+                    keyboardType: field.keyboardType,
+                    label: field.label,
+                    prefixIcon: field.prefixIcon != null
+                        ? Icon(
+                            field.prefixIcon,
+                            color: AppColors.primary,
+                            size: 18,
+                          )
+                        : null,
+                    readOnly: field.readOnly,
+                    onTap: field.onTap,
+                    validator: field.validator,
+                    onChanged: (_) => field.onChanged?.call(),
+                  ),
                 )),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ToggleButtons(
@@ -226,7 +233,6 @@ class _HealthFormPersonalInfoState
                 ),
                 children: [
                   Row(
-                    spacing: 8,
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -234,6 +240,7 @@ class _HealthFormPersonalInfoState
                         CommunityMaterialIcons.gender_male,
                         size: 18,
                       ),
+                      const SizedBox(width: 8),
                       Text(
                         'Masculino',
                         style: AppFonts.body1.copyWith(
@@ -245,7 +252,6 @@ class _HealthFormPersonalInfoState
                     ],
                   ),
                   Row(
-                    spacing: 8,
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -253,6 +259,7 @@ class _HealthFormPersonalInfoState
                         CommunityMaterialIcons.gender_female,
                         size: 18,
                       ),
+                      const SizedBox(width: 8),
                       Text(
                         'Femenino',
                         style: AppFonts.body1.copyWith(
@@ -266,6 +273,7 @@ class _HealthFormPersonalInfoState
                 ],
               ),
             ),
+            const SizedBox(height: 32),
             PviFormButton(
                 buttonText: 'Guardar',
                 onSubmit: _isFormValid
@@ -313,8 +321,11 @@ class _HealthFormPersonalInfoState
                           },
                         );
                       }
-                    : null)
-          ]),
+                    : null),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
     );
   }
 }

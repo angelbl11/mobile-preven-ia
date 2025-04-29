@@ -1,10 +1,10 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile_preven_ia_app/app.dart';
 import 'package:mobile_preven_ia_app/core/providers/connection/connectivity_controller.dart';
 import 'package:mobile_preven_ia_app/core/startup/app_startup_error.dart';
 import 'package:mobile_preven_ia_app/core/startup/app_startup_loading.dart';
+import 'package:mobile_preven_ia_app/core/startup/auth_wrapper.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_error.dart';
 
 /// The widget that shows the network state of the app.
@@ -29,8 +29,8 @@ class AppStartupNetworkState extends ConsumerWidget {
           );
         }
 
-        /// If there is connectivity, load the main app
-        return const App();
+        /// If there is connectivity, load the main app with auth wrapper
+        return const AuthWrapper();
       },
       // 3. loading state - show a loading widget
       loading: () => const AppStartupLoading(),

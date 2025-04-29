@@ -31,7 +31,7 @@ class PviWeightUpdateModal extends ConsumerWidget {
 
     return AlertDialog(
       backgroundColor: AppColors.background,
-      title: PviText(
+      title: const PviText(
         text: 'Actualizar peso',
         variant: TextVariant.headline2,
       ),
@@ -42,7 +42,7 @@ class PviWeightUpdateModal extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              PviText(
+              const PviText(
                 text: '¿Deseas actualizar tu peso actual?',
                 variant: TextVariant.body1,
               ),

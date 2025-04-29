@@ -3,6 +3,7 @@ import 'package:mobile_preven_ia_app/core/domain/models/health_prediction.dart';
 import 'package:mobile_preven_ia_app/core/domain/models/health_analysis.dart';
 import 'package:mobile_preven_ia_app/core/domain/models/exam_result.dart';
 import 'package:mobile_preven_ia_app/core/domain/models/diagnosis.dart';
+import 'package:mobile_preven_ia_app/core/domain/models/risk_level.dart';
 import 'package:mobile_preven_ia_app/core/domain/models/variables.dart';
 import 'package:mobile_preven_ia_app/core/domain/models/model_prediction.dart';
 import 'package:mobile_preven_ia_app/core/domain/models/exam_range.dart';
@@ -78,7 +79,7 @@ class HealthAnalysisMapper {
       if (key != 'overall_risk_level' && key != 'combined_recommendations') {
         final model = value as Map<String, dynamic>;
         result[key] = ModelPrediction(
-          riskLevel: model['risk_level'] as String,
+          riskLevel: RiskLevel.fromJson(model['risk_level'] as String),
           probability: (model['probability'] as num).toDouble(),
           prediction: model['prediction'] as String,
           modelProbabilities: Map<String, double>.from(

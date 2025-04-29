@@ -7,7 +7,6 @@ import 'package:mobile_preven_ia_app/core/widgets/pvi_form_button.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_text_input.dart';
 import 'package:mobile_preven_ia_app/screens/processing-file/processing_file_screen.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:mobile_preven_ia_app/core/domain/controllers/weight/weight_controller.dart';
 import 'package:mobile_preven_ia_app/core/functions/status_handler_function.dart';

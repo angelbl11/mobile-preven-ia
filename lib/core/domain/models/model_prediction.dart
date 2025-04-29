@@ -1,5 +1,7 @@
+import 'package:mobile_preven_ia_app/core/domain/models/risk_level.dart';
+
 class ModelPrediction {
-  final String riskLevel;
+  final RiskLevel riskLevel;
   final double probability;
   final String prediction;
   final Map<String, double> modelProbabilities;
@@ -13,7 +15,7 @@ class ModelPrediction {
 
   factory ModelPrediction.fromJson(Map<String, dynamic> json) {
     return ModelPrediction(
-      riskLevel: json['risk_level'] as String,
+      riskLevel: RiskLevel.fromJson(json['risk_level'] as String),
       probability: (json['probability'] as num).toDouble(),
       prediction: json['prediction'] as String,
       modelProbabilities: Map<String, double>.from(
@@ -26,7 +28,7 @@ class ModelPrediction {
 
   Map<String, dynamic> toJson() {
     return {
-      'risk_level': riskLevel,
+      'risk_level': riskLevel.toJson(),
       'probability': probability,
       'prediction': prediction,
       'model_probabilities': modelProbabilities,

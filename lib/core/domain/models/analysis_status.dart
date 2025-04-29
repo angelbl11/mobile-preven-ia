@@ -10,3 +10,16 @@ enum AnalysisStatus {
     );
   }
 }
+
+extension AnalysisStatusExtension on AnalysisStatus {
+  String get displayName {
+    switch (this) {
+      case AnalysisStatus.observation:
+        return 'Seguimiento';
+      case AnalysisStatus.acceptable:
+        return 'Aceptable';
+      case AnalysisStatus.critical:
+        return 'Crítico';
+    }
+  }
+}

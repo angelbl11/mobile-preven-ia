@@ -7,7 +7,7 @@ part of 'health_files_controller.dart';
 // **************************************************************************
 
 String _$healthFilesControllerHash() =>
-    r'c3afc50272f54de5081dacbb869438a455455541';
+    r'd1462043baf26ed2e037b99fa9fe3949bac98cf6';
 
 /// [HealthFilesController] provider
 ///

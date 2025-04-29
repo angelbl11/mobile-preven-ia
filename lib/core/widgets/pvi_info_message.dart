@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:mobile_preven_ia_app/core/resources/app_colors.dart';
-import 'package:mobile_preven_ia_app/core/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
 
 class PviInfoMessage extends StatelessWidget {

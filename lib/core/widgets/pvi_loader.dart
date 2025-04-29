@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:mobile_preven_ia_app/core/resources/app_fonts.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
 
 class PviLoader extends StatelessWidget {

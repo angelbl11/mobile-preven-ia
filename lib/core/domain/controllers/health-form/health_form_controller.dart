@@ -25,8 +25,27 @@ class HealthFormController extends _$HealthFormController {
 
   Future<void> updateHealthForm(HealthFormInfo healthFormInfo) async {
     try {
+      final currentState = state.value;
+      if (currentState == null) {
+        final healthFormRepository = ref.read(healthFormRepositoryProvider);
+        return healthFormRepository.updateHealthForm(healthFormInfo);
+      }
+
+      final updatedForm = HealthFormInfo(
+        name: healthFormInfo.name ?? currentState.name,
+        dateOfBirth: healthFormInfo.dateOfBirth ?? currentState.dateOfBirth,
+        personalInfo: healthFormInfo.personalInfo ?? currentState.personalInfo,
+        lifestyle: healthFormInfo.lifestyle ?? currentState.lifestyle,
+        familyHistory:
+            healthFormInfo.familyHistory ?? currentState.familyHistory,
+        monitoring: healthFormInfo.monitoring ?? currentState.monitoring,
+        step: healthFormInfo.step,
+        completed: healthFormInfo.completed,
+      );
+
       final healthFormRepository = ref.read(healthFormRepositoryProvider);
-      return healthFormRepository.updateHealthForm(healthFormInfo);
+      await healthFormRepository.updateHealthForm(updatedForm);
+      state = AsyncValue.data(updatedForm);
     } catch (e) {
       rethrow;
     }
@@ -38,12 +57,34 @@ class HealthFormController extends _$HealthFormController {
       if (currentState == null) return;
 
       final updatedForm = HealthFormInfo(
-        name: currentState.name,
-        dateOfBirth: currentState.dateOfBirth,
-        personalInfo: currentState.personalInfo,
-        lifestyle: currentState.lifestyle,
-        familyHistory: currentState.familyHistory,
-        monitoring: currentState.monitoring,
+        name: currentState.name ?? '',
+        dateOfBirth: currentState.dateOfBirth ?? DateTime.now(),
+        personalInfo: currentState.personalInfo ??
+            PersonalInfo(
+              age: 0,
+              gender: '',
+              height: 0,
+              weight: 0,
+              bmi: 0,
+            ),
+        lifestyle: currentState.lifestyle ??
+            Lifestyle(
+              physicalActivity: 'none',
+              smoker: 0,
+              alcoholConsumption: 'none',
+            ),
+        familyHistory: currentState.familyHistory ??
+            FamilyHistory(
+              diabetes: 0,
+              hypertension: 0,
+              obesity: 0,
+            ),
+        monitoring: currentState.monitoring ??
+            Monitoring(
+              diabetes: false,
+              hypertension: false,
+              obesity: false,
+            ),
         step: step,
         completed: currentState.completed,
       );

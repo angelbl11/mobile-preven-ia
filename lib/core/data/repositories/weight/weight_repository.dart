@@ -12,7 +12,7 @@ class WeightRepository {
 
   Future<void> updateWeight(double weight) async {
     try {
-      final response = await dio.dio.post('/v1/weight/update', data: {
+      final response = await dio.dio.put('/v1/weight/update', data: {
         'weight': weight,
       });
 

@@ -73,7 +73,6 @@ class HealthFilesRepository {
 
       return HealthAnalysisMapper.fromResponse(response.data);
     } catch (e) {
-      print('Error processing response: $e');
       rethrow;
     }
   }

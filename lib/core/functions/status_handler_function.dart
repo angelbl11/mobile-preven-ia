@@ -25,7 +25,6 @@ class StatusHandlerFunction {
       Navigator.of(context, rootNavigator: true).pop();
       onSuccessCallBack();
     } catch (e) {
-      print('Error Dio: $e');
       String errorMessage = 'Ocurrió un error inesperado.';
 
       if (e is DioException) {

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile_preven_ia_app/core/resources/app_colors.dart';
-import 'package:mobile_preven_ia_app/core/resources/app_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
 
@@ -32,29 +30,44 @@ class PviError extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Directionality(
       textDirection: TextDirection.ltr,
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: Column(
-          children: [
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.2,
-            ),
-            Lottie.asset(
-              'assets/lotties/error.json',
-              width: 80,
-              height: 80,
-            ),
-            PviText(
-              text: '¡Hubo un problema!',
-              variant: TextVariant.headline2,
-            ),
-            PviText(
-              text: customMessage ??
-                  'Lo sentimos, pero no puedes realizar esta acción en este momento.',
-              variant: TextVariant.caption,
-              textAlign: TextAlign.center,
-            ),
-          ],
+      child: Container(
+        color: Colors.white,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Lottie.asset(
+                'assets/lotties/error.json',
+                width: 80,
+                height: 80,
+              ),
+              const SizedBox(height: 16),
+              const PviText(
+                text: '¡Hubo un problema!',
+                variant: TextVariant.headline2,
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: PviText(
+                  text: customMessage ??
+                      'Lo sentimos, pero no puedes realizar esta acción en este momento.',
+                  variant: TextVariant.caption,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              if (onRetry != null) ...[
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: onRetry,
+                  child: const PviText(
+                    text: 'Intentar de nuevo',
+                    variant: TextVariant.button1,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );

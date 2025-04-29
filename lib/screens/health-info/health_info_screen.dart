@@ -20,23 +20,26 @@ class HealthInfoScreen extends ConsumerWidget {
 
     return healthFormController.when(
       data: (healthForm) => PviScaffold(
-        screenContent: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              HealthFormStepper(
-                currentStep: healthForm.step.toInt(),
-                totalSteps: 3,
-                onStepChanged: (step) {
-                  ref
-                      .read(healthFormControllerProvider.notifier)
-                      .updateStep(step);
-                },
+        screenContent: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            HealthFormStepper(
+              currentStep: healthForm.step.toInt(),
+              totalSteps: 3,
+              onStepChanged: (step) {
+                ref
+                    .read(healthFormControllerProvider.notifier)
+                    .updateStep(step);
+              },
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: _buildStepContent(healthForm.step.toInt()),
               ),
-              const SizedBox(height: 24),
-              _buildStepContent(healthForm.step.toInt()),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       loading: () => const PviLoader(),
@@ -48,9 +51,7 @@ class HealthInfoScreen extends ConsumerWidget {
               false) {
             return PviScaffold(
               screenContent: Column(
-                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 32,
                 children: [
                   HealthFormStepper(
                     currentStep: 0,
@@ -61,7 +62,13 @@ class HealthInfoScreen extends ConsumerWidget {
                           .updateStep(step);
                     },
                   ),
-                  const HealthFormPersonalInfo(),
+                  const SizedBox(height: 24),
+                  const Expanded(
+                    child: SingleChildScrollView(
+                      physics: ClampingScrollPhysics(),
+                      child: HealthFormPersonalInfo(),
+                    ),
+                  ),
                 ],
               ),
             );

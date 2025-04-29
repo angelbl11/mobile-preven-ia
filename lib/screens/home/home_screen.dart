@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_preven_ia_app/core/domain/controllers/health-files/health_files_controller.dart';
 import 'package:mobile_preven_ia_app/core/domain/controllers/health-form/health_form_controller.dart';
+import 'package:mobile_preven_ia_app/core/extensions/get_name_initials_extension.dart';
+import 'package:mobile_preven_ia_app/core/providers/auth/auth0_controller.dart';
+import 'package:mobile_preven_ia_app/core/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_error.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_form_button.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_loader.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_scaffold.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
+import 'package:mobile_preven_ia_app/screens/home/widgets/clinical_results.dart';
+import 'package:mobile_preven_ia_app/screens/profile/profile_screen.dart';
 import 'package:mobile_preven_ia_app/screens/upload-file/upload_file_screen.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
@@ -27,6 +32,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final healthFormAsync = ref.watch(healthFormControllerProvider);
     final healthFilesAsync = ref.watch(healthFilesControllerProvider);
+    final userInfoAsync = ref.watch(
+        auth0ControllerProvider.select((value) => value.credentials?.user));
 
     return healthFormAsync.when(
       loading: () => const PviLoader(),
@@ -53,17 +60,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Row(
                     spacing: 16,
                     children: [
+                      GestureDetector(
+                        onTap: () {
+                          PersistentNavBarNavigator.pushNewScreen(
+                            context,
+                            screen: const ProfileScreen(),
+                            withNavBar: false,
+                            pageTransitionAnimation:
+                                PageTransitionAnimation.fade,
+                          );
+                        },
+                        child: CircleAvatar(
+                          radius: 28,
+                          backgroundImage: userInfoAsync?.pictureUrl != null
+                              ? NetworkImage(
+                                  userInfoAsync!.pictureUrl.toString())
+                              : null,
+                          backgroundColor: AppColors.primary,
+                          child: userInfoAsync?.pictureUrl == null
+                              ? PviText(
+                                  text: healthInfo.name?.getInitials() ?? '',
+                                  variant: TextVariant.headline2,
+                                  color: AppColors.background,
+                                )
+                              : null,
+                        ),
+                      ),
                       PviText(
-                        text: '¡Hola, ${healthInfo.name}!',
+                        text: '¡Hola, ${healthInfo.name ?? ''}!',
                         variant: TextVariant.headline2,
                       ),
                     ],
                   ),
                   Visibility(
                     visible: filteredHealthFiles.isNotEmpty,
-                    child: const PviText(
-                      text: 'Estos son tus últimos resultados',
-                      variant: TextVariant.headline3,
+                    child: Column(
+                      spacing: 24,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const PviText(
+                          text: 'Estos son tus últimos resultados',
+                          variant: TextVariant.headline3,
+                        ),
+                        ...filteredHealthFiles.map((healthFile) =>
+                            ClinicalResults(prediction: healthFile)),
+                      ],
                     ),
                   ),
                   if (filteredHealthFiles.isEmpty)

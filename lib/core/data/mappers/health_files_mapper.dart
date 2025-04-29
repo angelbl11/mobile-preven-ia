@@ -1,4 +1,6 @@
 import 'package:mobile_preven_ia_app/core/domain/models/health_file.dart';
+import 'package:mobile_preven_ia_app/core/domain/models/health_prediction.dart';
+import 'dart:convert';
 
 /// Mapper for health files
 class HealthFilesMapper {
@@ -39,7 +41,7 @@ class HealthFilesMapper {
               fileName: file['fileName'] as String,
               uploadDate: DateTime.parse(file['uploadDate'] as String),
               processedText: file['processedText'] as String,
-              geminiAnalysis: file['geminiAnalysis'] as String,
+              geminiAnalysis: _parseGeminiAnalysis(file['geminiAnalysis']),
               documentId: file['documentId'] as String,
             ))
         .toList();
@@ -53,8 +55,40 @@ class HealthFilesMapper {
           ? DateTime.parse(file['uploadDate'].toString())
           : DateTime.now(),
       processedText: file['processedText']?.toString() ?? '',
-      geminiAnalysis: file['geminiAnalysis']?.toString() ?? '',
+      geminiAnalysis: _parseGeminiAnalysis(file['geminiAnalysis']),
       documentId: file['documentId']?.toString() ?? '',
     );
+  }
+
+  static HealthPrediction _parseGeminiAnalysis(dynamic geminiAnalysis) {
+    if (geminiAnalysis == null) {
+      return HealthPrediction(id: null, documentId: null, analysis: null);
+    }
+
+    if (geminiAnalysis is Map<String, dynamic>) {
+      return HealthPrediction.fromJson(geminiAnalysis);
+    }
+
+    if (geminiAnalysis is String) {
+      try {
+        // Clean the string by removing the markdown code block markers
+        final cleanAnalysisString =
+            geminiAnalysis.replaceAll('```json\n', '').replaceAll('\n```', '');
+        final Map<String, dynamic> jsonMap = jsonDecode(cleanAnalysisString);
+
+        // Convert the risk level string to enum
+        if (jsonMap['analysis'] != null &&
+            jsonMap['analysis']['risk_level'] != null) {
+          jsonMap['analysis']['risk_level'] =
+              jsonMap['analysis']['risk_level'].toString().toLowerCase();
+        }
+
+        return HealthPrediction.fromJson(jsonMap);
+      } catch (e) {
+        return HealthPrediction(id: null, documentId: null, analysis: null);
+      }
+    }
+
+    return HealthPrediction(id: null, documentId: null, analysis: null);
   }
 }

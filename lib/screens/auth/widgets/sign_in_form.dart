@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile_preven_ia_app/core/classes/message_status.dart';
+import 'package:mobile_preven_ia_app/core/functions/show_toast.dart';
 import 'package:mobile_preven_ia_app/core/functions/status_handler_function.dart';
 import 'package:mobile_preven_ia_app/core/providers/auth/auth0_controller.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_form_button.dart';
@@ -80,22 +82,11 @@ class SignInForm extends ConsumerWidget {
                   await _handleAuthSuccess(context, ref);
                 },
                 onFailCallBack: (error) {
-                  print('Error en login: $error');
-                  if (context.mounted) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Error de inicio de sesión'),
-                        content: Text(error.toString()),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('Aceptar'),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+                  showToast(
+                    context: context,
+                    message: error.toString(),
+                    status: MessageStatus.error,
+                  );
                 },
               );
             },
@@ -109,22 +100,11 @@ class SignInForm extends ConsumerWidget {
                   await _handleAuthSuccess(context, ref);
                 },
                 onFailCallBack: (error) {
-                  print('Error en register: $error');
-                  if (context.mounted) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Error de registro'),
-                        content: Text(error.toString()),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('Aceptar'),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+                  showToast(
+                    context: context,
+                    message: error.toString(),
+                    status: MessageStatus.error,
+                  );
                 },
               );
             },
