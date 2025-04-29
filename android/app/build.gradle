@@ -34,7 +34,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         minSdkVersion 23
-        manifestPlaceholders += [auth0Domain: "preven-ia.us.auth0.com", auth0Scheme: "https"]
+        manifestPlaceholders += [auth0Domain: "preven-ia.us.auth0.com", auth0Scheme: "com.mobile.preven.ia.app"]
 
     }
 
