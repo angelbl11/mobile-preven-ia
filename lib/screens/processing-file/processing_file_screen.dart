@@ -1,12 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/mappers/analysis_data.dart';
-import 'package:mobile_preven_ia_app/gemini/controllers/process_info_controller.dart';
-import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
-import 'package:mobile_preven_ia_app/screens/analysis-details/analysis_details_screen.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_error.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
+import 'package:mobile_preven_ia_app/core/domain/controllers/health-files/health_files_controller.dart';
+import 'package:mobile_preven_ia_app/core/domain/models/health_prediction.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_error.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
+import 'package:mobile_preven_ia_app/screens/blood-test-results/blood_test_results_screen.dart';
 
 class ProcessingFileScreen extends ConsumerStatefulWidget {
   const ProcessingFileScreen({super.key});
@@ -16,46 +16,22 @@ class ProcessingFileScreen extends ConsumerStatefulWidget {
 }
 
 class ProcessingFileScreenState extends ConsumerState<ProcessingFileScreen> {
-  bool _hasNavigated = false;
-  late Future<AnalysisData?> _processInfoFuture;
-  bool _initialized = false;
+  late Future<HealthPrediction> _processInfoFuture;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_initialized) {
-      final args =
-          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
-              {};
-      final extractedText = args['extractedText'] as String? ?? '';
-      final isUsingModel = args['isUsingModel'] as bool? ?? false;
-      final rawParameterValues = args['parameterValues'];
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+            {};
+    final documentId = args['documentId'] as String? ?? '';
+    final systolic = args['systolic'] as String? ?? '';
+    final diastolic = args['diastolic'] as String? ?? '';
 
-      // Debug prints
-
-      // Ensure parameterValues is a Map and handle null values
-      Map<String, dynamic> parameterValues = {};
-      if (rawParameterValues is Map) {
-        parameterValues = Map<String, dynamic>.from(rawParameterValues);
-      }
-
-      // Ensure all parameter values are strings and not null
-      final sanitizedParameterValues = <String, String>{};
-      parameterValues.forEach((key, value) {
-        if (value != null) {
-          sanitizedParameterValues[key.toString()] = value.toString();
-        }
-      });
-
-      _processInfoFuture = isUsingModel
-          ? ref
-              .read(processInfoControllerProvider.notifier)
-              .analyzeTextWithModel(extractedText, sanitizedParameterValues)
-          : ref
-              .read(processInfoControllerProvider.notifier)
-              .analyzeTextWithoutModel(extractedText);
-      _initialized = true;
-    }
+    _processInfoFuture = ref
+        .read(healthFilesControllerProvider.notifier)
+        .processHealthFile(
+            documentId, double.parse(systolic), double.parse(diastolic));
   }
 
   @override
@@ -64,75 +40,59 @@ class ProcessingFileScreenState extends ConsumerState<ProcessingFileScreen> {
       future: _processInfoFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return SafeArea(
-            child: Scaffold(
-              body: Center(
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 32),
-                  child: Column(
-                    spacing: 22,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Lottie.asset(
-                        'assets/lotties/processing-file.json',
-                        width: 180,
-                        height: 180,
-                      ),
-                      PviText(
-                        text: 'Analizando parámetros clínicos',
-                        style: AppFonts.headline2,
-                      ),
-                      PviText(
-                        text: 'Esto puede tomar unos minutos',
-                        style: AppFonts.caption,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
+          return _buildLoadingState();
         }
 
         if (snapshot.hasError) {
+          if (snapshot.error is DioException) {
+            final response = snapshot.error as DioException;
+            final message = response.response?.data['message'];
+            return PviError(
+              customMessage:
+                  'Error al analizar los parámetros: ${message ?? snapshot.error}',
+            );
+          }
           return PviError(
             customMessage:
                 'Error al analizar los parámetros: ${snapshot.error}',
           );
         }
 
-        final analysisData = snapshot.data;
-        if (analysisData == null) {
-          return const PviError(
-            customMessage: 'No se pudo obtener el análisis de los parámetros',
-          );
-        }
-
-        if (!_hasNavigated) {
-          _hasNavigated = true;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            // Ensure all data is properly formatted before passing
-            final analysisMap = analysisData.toMap();
-
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AnalysisDetailsScreen(),
-                settings: RouteSettings(
-                  arguments: {
-                    'analysis': analysisMap,
-                  },
-                ),
-              ),
-              (route) => route.settings.name == '/',
-            );
-          });
-          return const SizedBox.shrink();
+        if (snapshot.hasData) {
+          final healthPrediction = snapshot.data;
+          return BloodTestResultsScreen(healthPrediction: healthPrediction!);
         }
 
         return const SizedBox.shrink();
       },
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Lottie.asset(
+                'assets/lotties/processing-file.json',
+                width: 180,
+                height: 180,
+              ),
+              const PviText(
+                text: 'Analizando parámetros clínicos',
+                variant: TextVariant.headline2,
+              ),
+              const PviText(
+                text: 'Esto puede tomar unos minutos',
+                variant: TextVariant.caption,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

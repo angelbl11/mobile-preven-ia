@@ -3,30 +3,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:mobile_preven_ia_app/extensions/date_formatter_extension.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/clinical-analysis/clinical_analysis_controller.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/mappers/analysis_data.dart';
-import 'package:mobile_preven_ia_app/functions/status_handler_function.dart';
-import 'package:mobile_preven_ia_app/resources/app_colors.dart';
-import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
-import 'package:mobile_preven_ia_app/screens/analysis-details/analysis_details_screen.dart';
-import 'package:mobile_preven_ia_app/screens/analysis-details/models/analysis_details_arguments.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
+import 'package:mobile_preven_ia_app/core/domain/models/analysis_status.dart';
+import 'package:mobile_preven_ia_app/core/domain/models/health_file.dart';
+import 'package:mobile_preven_ia_app/core/extensions/date_formatter_extension.dart';
+import 'package:mobile_preven_ia_app/core/resources/app_colors.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
+import 'package:mobile_preven_ia_app/screens/blood-test-results/blood_test_results_screen.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class ClinicalResults extends ConsumerWidget {
   const ClinicalResults({
     super.key,
-    required this.analysis,
+    required this.prediction,
   });
 
-  final AnalysisData analysis;
+  final HealthFile prediction;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stateGeneral =
-        analysis.diagnosis['global_status'] as String? ?? 'ACCEPTABLE';
-    final date = analysis.createdAt.toIso8601String().toFormattedDateTime();
+        prediction.geminiAnalysis.analysis?.diagnosis.globalStatus;
+    final date = prediction.uploadDate.toIso8601String().toFormattedDateTime();
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -55,9 +53,9 @@ class ClinicalResults extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 2,
                 children: [
-                  PviText(text: 'Prueba de sangre', style: AppFonts.body2),
-                  PviText(
-                      text: date, style: AppFonts.body1.copyWith(fontSize: 12)),
+                  const PviText(
+                      text: 'Prueba de sangre', variant: TextVariant.body2),
+                  PviText(text: date, variant: TextVariant.body1),
                 ],
               ),
               const Spacer(),
@@ -65,59 +63,45 @@ class ClinicalResults extends ConsumerWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.05),
+                  color: stateGeneral == AnalysisStatus.critical
+                      ? AppColors.error
+                      : stateGeneral == AnalysisStatus.observation
+                          ? AppColors.warning
+                          : AppColors.success,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: PviText(
-                    text: stateGeneral == 'CRITICAL'
-                        ? 'Crítico'
-                        : stateGeneral == 'OBSERVATION'
-                            ? 'Revisión'
-                            : 'Normal',
-                    style: AppFonts.body1.copyWith(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                        color: stateGeneral == 'ACCEPTABLE'
-                            ? AppColors.success
-                            : stateGeneral == 'OBSERVATION'
-                                ? AppColors.warning
-                                : AppColors.error)),
-              ),
-              const Spacer(),
-              InkWell(
-                onTap: () async {
-                  StatusHandlerFunction.handleStatus(
-                    context: context,
-                    action: ref
-                        .read(clinicalAnalysisControllerProvider.notifier)
-                        .getUserAnalysisById(analysis.id),
-                    onSuccessCallBack: () {
-                      PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
-                        context,
-                        screen: const AnalysisDetailsScreen(),
-                        withNavBar: false,
-                        pageTransitionAnimation: PageTransitionAnimation.fade,
-                        settings: RouteSettings(
-                          arguments: AnalysisDetailsArguments(
-                            analysis: analysis,
-                          ).toMap(),
-                        ),
-                      );
-                    },
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.gray4,
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: const Icon(
-                    LucideIcons.chevronRight,
-                    color: AppColors.gray5,
-                  ),
+                  text: stateGeneral?.displayName ?? 'PENDING',
+                  variant: TextVariant.body2,
+                  color: AppColors.background,
                 ),
               ),
+              const SizedBox(width: 8),
+              if (prediction.geminiAnalysis.analysis != null)
+                InkWell(
+                  onTap: () async {
+                    PersistentNavBarNavigator.pushNewScreen(
+                      context,
+                      screen: BloodTestResultsScreen(
+                        healthPrediction: prediction.geminiAnalysis,
+                      ),
+                      withNavBar: false,
+                      pageTransitionAnimation: PageTransitionAnimation.fade,
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.gray4,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: const Icon(
+                      LucideIcons.chevronRight,
+                      color: AppColors.gray5,
+                      size: 20,
+                    ),
+                  ),
+                ),
             ],
           ),
         ],

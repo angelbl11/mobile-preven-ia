@@ -1,656 +1,572 @@
-import 'dart:io';
-
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:mobile_preven_ia_app/classes/message_status.dart';
-import 'package:mobile_preven_ia_app/firebase/auth/providers/fire_auth_controller.dart';
-import 'package:mobile_preven_ia_app/firebase/classes/session_info.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/classes/user_profile.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/user/user_controller.dart';
-import 'package:mobile_preven_ia_app/functions/show_toast.dart';
-import 'package:mobile_preven_ia_app/functions/status_handler_function.dart';
-import 'package:mobile_preven_ia_app/resources/app_colors.dart';
-import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
-import 'package:mobile_preven_ia_app/screens/verify-email/verify_email_screen.dart';
-import 'package:mobile_preven_ia_app/utils/get_user_initials.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_error.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_loader.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_text_button.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_text_input.dart';
-import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
+import 'package:mobile_preven_ia_app/core/classes/message_status.dart';
+import 'package:mobile_preven_ia_app/core/domain/controllers/health-form/health_form_controller.dart';
+import 'package:mobile_preven_ia_app/core/domain/controllers/weight/weight_controller.dart';
+import 'package:mobile_preven_ia_app/core/domain/models/health_form_info.dart';
+import 'package:mobile_preven_ia_app/core/functions/show_toast.dart';
+import 'package:mobile_preven_ia_app/core/functions/status_handler_function.dart';
+import 'package:mobile_preven_ia_app/core/providers/auth/auth0_controller.dart';
+import 'package:mobile_preven_ia_app/core/resources/app_colors.dart';
+import 'package:mobile_preven_ia_app/core/resources/app_fonts.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_error.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_loader.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_text_button.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_text_input.dart';
+import 'package:mobile_preven_ia_app/screens/auth/auth_screen.dart';
+import 'package:page_transition/page_transition.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
-  Future<Map<String, dynamic>> _getUserData(WidgetRef ref) async {
-    final userProfile = await ref.read(userControllerProvider.future);
-    final authInfo = await ref.watch(fireAuthControllerProvider.future);
-    return {
-      'profile': userProfile,
-      'auth': authInfo,
-    };
-  }
 
-  Future<void> _pickAndUploadImage(WidgetRef ref, BuildContext context) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile == null) {
-      return;
-    }
-    final file = File(pickedFile.path);
-    if (!context.mounted) return;
-    StatusHandlerFunction.handleStatus(
-        context: context,
-        action: ref
-            .read(userControllerProvider.notifier)
-            .updateProfilePicture(file),
-        onSuccessCallBack: () {
-          ref.invalidate(userControllerProvider);
-          showToast(
-              status: MessageStatus.success,
-              context: context,
-              message: 'Imagen de perfil actualizada correctamente');
-        });
+  String _getUserInitials(String name) {
+    if (name.isEmpty) return '';
+    final parts = name.split(' ');
+    if (parts.length == 1) return parts[0][0].toUpperCase();
+    return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return FutureBuilder<Map<String, dynamic>>(
-      future: _getUserData(ref),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const PviLoader();
-        } else if (snapshot.hasError) {
-          return PviError(
-              customMessage: 'Error al cargar datos: ${snapshot.error}');
-        } else if (snapshot.hasData) {
-          final userProfile = snapshot.data!['profile'] as UserProfile;
-          final authInfo = snapshot.data!['auth'] as SessionInfo;
+    final healthForm = ref.watch(healthFormControllerProvider);
+    final auth0State = ref.watch(auth0ControllerProvider);
 
-          // Imagen por defecto
-          return SafeArea(
-            child: Scaffold(
-              extendBody: true,
-              resizeToAvoidBottomInset: true,
-              appBar: AppBar(
-                surfaceTintColor: AppColors.background,
-                backgroundColor: AppColors.background,
-              ),
-              body: SingleChildScrollView(
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 32),
-                  child: Column(
-                    spacing: 18,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Align(
-                        alignment: Alignment.center,
-                        child: Stack(
+    return healthForm.when(
+      data: (healthFormInfo) {
+        final userProfile = healthFormInfo;
+        final userEmail = auth0State.credentials?.user.email ?? '';
+
+        return Scaffold(
+          extendBody: true,
+          resizeToAvoidBottomInset: true,
+          appBar: AppBar(
+            surfaceTintColor: AppColors.background,
+            backgroundColor: AppColors.background,
+          ),
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: AppColors.secondary,
+                      child: Center(
+                        child: Text(
+                          _getUserInitials(userProfile.name ?? ''),
+                          style:
+                              AppFonts.headline3.copyWith(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.center,
+                    child: Column(
+                      children: [
+                        PviText(
+                          text: userProfile.name ?? '',
+                          variant: TextVariant.headline3,
+                        ),
+                        PviText(
+                          text: userEmail,
+                          variant: TextVariant.subtitle2,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  const PviText(
+                    text: 'Información personal',
+                    variant: TextVariant.headline3,
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.gray4,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const PviText(
+                          text: 'Nombre completo',
+                          variant: TextVariant.body1,
+                        ),
+                        PviText(
+                          text: userProfile.name ?? '',
+                          variant: TextVariant.body1,
+                        ),
+                        const PviText(
+                          text: 'Fecha de nacimiento',
+                          variant: TextVariant.body1,
+                        ),
+                        PviText(
+                          text: DateFormat('dd/MM/yyyy').format(
+                              userProfile.dateOfBirth ?? DateTime.now()),
+                          variant: TextVariant.body1,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  const PviText(
+                    text: 'Información de salud',
+                    variant: TextVariant.headline3,
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.gray4,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const PviText(
+                          text: 'Peso (kg)',
+                          variant: TextVariant.body1,
+                        ),
+                        Row(
                           children: [
-                            CircleAvatar(
-                              radius: 50,
-                              backgroundColor: AppColors.secondary,
-                              backgroundImage: userProfile.photoUrl != '' &&
-                                      userProfile.photoUrl != null
-                                  ? NetworkImage(userProfile.photoUrl ?? '')
-                                  : null,
-                              child: userProfile.photoUrl == null ||
-                                      userProfile.photoUrl == ''
-                                  ? Center(
-                                      child: Text(
-                                        getUserInitials(userProfile),
-                                        style: AppFonts.headline3
-                                            .copyWith(color: Colors.white),
+                            PviText(
+                              text:
+                                  '${userProfile.personalInfo?.weight.toString()} kg',
+                              variant: TextVariant.body1,
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                size: 20,
+                                LucideIcons.pen,
+                                color: AppColors.primary,
+                              ),
+                              onPressed: () {
+                                final weightController = TextEditingController(
+                                  text: userProfile.personalInfo?.weight
+                                      .toString(),
+                                );
+                                final formKey = GlobalKey<FormState>();
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      backgroundColor: AppColors.background,
+                                      title: const PviText(
+                                        text: 'Editar peso',
+                                        variant: TextVariant.headline2,
                                       ),
-                                    )
-                                  : null,
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: InkWell(
-                                onTap: () => _pickAndUploadImage(ref, context),
-                                child: const CircleAvatar(
-                                  backgroundColor: AppColors.primary,
-                                  radius: 15.0,
-                                  child: Icon(
-                                    LucideIcons.camera,
-                                    size: 15.0,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Align(
-                        alignment: Alignment.center,
-                        child: Column(
-                          children: [
-                            PviText(
-                              text:
-                                  '${userProfile.name} ${userProfile.lastName}',
-                              style: AppFonts.headline3,
-                            ),
-                            PviText(
-                              text: '${authInfo.user.email}',
-                              style: AppFonts.subtitle2.copyWith(fontSize: 14),
-                            ),
-                          ],
-                        ),
-                      ),
-                      PviText(
-                        text: 'Información personal',
-                        style: AppFonts.headline3,
-                      ),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.gray4,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          spacing: 8,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            PviText(
-                              text: 'Nombre completo',
-                              style: AppFonts.body1.copyWith(
-                                  fontSize: 14,
-                                  color: AppColors.gray5,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                            PviText(
-                              text:
-                                  '${userProfile.name} ${userProfile.lastName} ${userProfile.maternalLastName}',
-                              style: AppFonts.body1,
-                            ),
-                            PviText(
-                              text: 'Fecha de nacimiento',
-                              style: AppFonts.body1.copyWith(
-                                  fontSize: 14,
-                                  color: AppColors.gray5,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                            PviText(
-                              text: userProfile.birthDate,
-                              style: AppFonts.body1,
-                            ),
-                          ],
-                        ),
-                      ),
-                      PviText(
-                        text: 'Información de salud',
-                        style: AppFonts.headline3,
-                      ),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.gray4,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          spacing: 8,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            PviText(
-                              text: 'Peso (kg)',
-                              style: AppFonts.body1.copyWith(
-                                  fontSize: 14,
-                                  color: AppColors.gray5,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                            Row(
-                              children: [
-                                PviText(
-                                    text: '${userProfile.weight.toString()} kg',
-                                    style: AppFonts.body1),
-                                IconButton(
-                                  icon: const Icon(
-                                    size: 20,
-                                    LucideIcons.pen,
-                                    color: AppColors.primary,
-                                  ),
-                                  onPressed: () {
-                                    final weightController =
-                                        TextEditingController(
-                                      text: userProfile.weight.toString(),
-                                    );
-                                    final formKey = GlobalKey<FormState>();
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          backgroundColor: AppColors.background,
-                                          title: PviText(
-                                            text: 'Editar peso',
-                                            style: AppFonts.headline2,
-                                          ),
-                                          content: SizedBox(
-                                            width: 300,
-                                            child: Form(
-                                              key: formKey,
-                                              child: PviTextInput(
-                                                controller: weightController,
-                                                keyboardType:
-                                                    TextInputType.number,
-                                                label: 'Peso (kg)',
-                                                prefixIcon: const Icon(
-                                                  CommunityMaterialIcons
-                                                      .weight_kilogram,
-                                                  color: AppColors.primary,
-                                                  size: 18,
-                                                ),
-                                                validator: (value) {
-                                                  if (value == null ||
-                                                      value.trim().isEmpty) {
-                                                    return 'Ingresa un peso válido';
-                                                  }
-                                                  final weight =
-                                                      double.tryParse(
-                                                          value.replaceAll(
-                                                              ',', '.'));
-                                                  if (weight == null) {
-                                                    return 'Ingresa un número válido';
-                                                  }
-                                                  if (weight < 30 ||
-                                                      weight > 200) {
-                                                    return 'El peso debe estar entre 30 y 200 kg';
-                                                  }
-                                                  if (weight ==
-                                                      userProfile.weight) {
-                                                    return 'El peso debe ser diferente al actual';
-                                                  }
-                                                  return null;
-                                                },
-                                              ),
+                                      content: SizedBox(
+                                        width: 300,
+                                        child: Form(
+                                          key: formKey,
+                                          child: PviTextInput(
+                                            controller: weightController,
+                                            keyboardType: TextInputType.number,
+                                            label: 'Peso (kg)',
+                                            prefixIcon: const Icon(
+                                              CommunityMaterialIcons
+                                                  .weight_kilogram,
+                                              color: AppColors.primary,
+                                              size: 18,
                                             ),
-                                          ),
-                                          actions: [
-                                            PviTextButton(
-                                              onPressed: () {
-                                                if (formKey.currentState!
-                                                    .validate()) {
-                                                  final newWeight =
-                                                      double.tryParse(
-                                                          weightController
-                                                              .text
-                                                              .replaceAll(
-                                                                  ',', '.'));
-                                                  if (newWeight != null) {
-                                                    StatusHandlerFunction
-                                                        .handleStatus(
-                                                            context: context,
-                                                            action: ref
-                                                                .read(userControllerProvider
-                                                                    .notifier)
-                                                                .updateUserWeight(
-                                                                    newWeight),
-                                                            onSuccessCallBack:
-                                                                () {
-                                                              ref.invalidate(
-                                                                  userControllerProvider);
-                                                              showToast(
-                                                                  status:
-                                                                      MessageStatus
-                                                                          .success,
-                                                                  context:
-                                                                      context,
-                                                                  message:
-                                                                      'Peso actualizado correctamente');
-                                                              Navigator.of(
-                                                                      context)
-                                                                  .pop();
-                                                            });
-                                                  }
-                                                }
-                                              },
-                                              text: 'Aceptar',
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                            PviText(
-                              text: 'Altura (m)',
-                              style: AppFonts.body1,
-                            ),
-                            PviText(
-                              text: '${userProfile.height.toString()} m',
-                              style: AppFonts.body1,
-                            ),
-                            PviText(
-                              text: 'Condiciones genéticas',
-                              style: AppFonts.body1.copyWith(
-                                  fontSize: 14,
-                                  color: AppColors.gray5,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                            Visibility(
-                              visible:
-                                  userProfile.isGeneticRiskDiabetes == true,
-                              child: PviText(
-                                text: '- Diabetes',
-                                style: AppFonts.body1,
-                              ),
-                            ),
-                            Visibility(
-                              visible:
-                                  userProfile.isGeneticRiskHypertension == true,
-                              child: PviText(
-                                text: '- Hipertensión',
-                                style: AppFonts.body1,
-                              ),
-                            ),
-                            Visibility(
-                              visible: userProfile.isGeneticRiskObesity == true,
-                              child: PviText(
-                                text: '- Obesidad',
-                                style: AppFonts.body1,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      PviText(
-                        text: 'Parámetros monitoreados',
-                        style: AppFonts.headline3,
-                      ),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.gray4,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          spacing: 8,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                PviText(
-                                  text: 'Parámetros que monitoreas',
-                                  style: AppFonts.body1.copyWith(
-                                      fontSize: 14,
-                                      color: AppColors.gray5,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    LucideIcons.settings,
-                                    color: AppColors.primary,
-                                    size: 20,
-                                  ),
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        bool tempMonitorLDL =
-                                            userProfile.monitorLdl;
-                                        bool tempMonitorGlucose =
-                                            userProfile.monitorGlucose;
-                                        bool tempMonitorWeight =
-                                            userProfile.monitorWeight;
-
-                                        return AlertDialog(
-                                          backgroundColor: AppColors.background,
-                                          title: PviText(
-                                            text:
-                                                'Editar parámetros monitoreados',
-                                            style: AppFonts.headline2,
-                                          ),
-                                          content: StatefulBuilder(
-                                            builder: (BuildContext context,
-                                                StateSetter setState) {
-                                              return Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  CheckboxListTile(
-                                                    title: PviText(
-                                                      text:
-                                                          'LDL (Colesterol malo)',
-                                                      style: AppFonts.body1,
-                                                    ),
-                                                    value: tempMonitorLDL,
-                                                    onChanged: (bool? value) {
-                                                      setState(() {
-                                                        tempMonitorLDL =
-                                                            value ?? false;
-                                                      });
-                                                    },
-                                                    activeColor:
-                                                        AppColors.primary,
-                                                  ),
-                                                  CheckboxListTile(
-                                                    title: PviText(
-                                                      text: 'Glucosa',
-                                                      style: AppFonts.body1,
-                                                    ),
-                                                    value: tempMonitorGlucose,
-                                                    onChanged: (bool? value) {
-                                                      setState(() {
-                                                        tempMonitorGlucose =
-                                                            value ?? false;
-                                                      });
-                                                    },
-                                                    activeColor:
-                                                        AppColors.primary,
-                                                  ),
-                                                  CheckboxListTile(
-                                                    title: PviText(
-                                                      text: 'Peso (kg)',
-                                                      style: AppFonts.body1,
-                                                    ),
-                                                    value: tempMonitorWeight,
-                                                    onChanged: (bool? value) {
-                                                      setState(() {
-                                                        tempMonitorWeight =
-                                                            value ?? false;
-                                                      });
-                                                    },
-                                                    activeColor:
-                                                        AppColors.primary,
-                                                  ),
-                                                ],
-                                              );
+                                            validator: (value) {
+                                              if (value == null ||
+                                                  value.trim().isEmpty) {
+                                                return 'Ingresa un peso válido';
+                                              }
+                                              final weight = double.tryParse(
+                                                  value.replaceAll(',', '.'));
+                                              if (weight == null) {
+                                                return 'Ingresa un número válido';
+                                              }
+                                              if (weight < 30 || weight > 200) {
+                                                return 'El peso debe estar entre 30 y 200 kg';
+                                              }
+                                              if (weight ==
+                                                  userProfile
+                                                      .personalInfo?.weight) {
+                                                return 'El peso debe ser diferente al actual';
+                                              }
+                                              return null;
                                             },
                                           ),
-                                          actions: [
-                                            PviTextButton(
-                                              textStyle: AppFonts.button1
-                                                  .copyWith(
-                                                      color: AppColors.gray5),
-                                              text: 'Cancelar',
-                                              onPressed: () =>
-                                                  Navigator.pop(context),
-                                            ),
-                                            PviTextButton(
-                                              text: 'Guardar',
-                                              onPressed: () {
+                                        ),
+                                      ),
+                                      actions: [
+                                        PviTextButton(
+                                          onPressed: () {
+                                            if (formKey.currentState!
+                                                .validate()) {
+                                              final newWeight = double.tryParse(
+                                                  weightController.text
+                                                      .replaceAll(',', '.'));
+                                              if (newWeight != null) {
                                                 StatusHandlerFunction
                                                     .handleStatus(
                                                   context: context,
                                                   action: ref
                                                       .read(
-                                                          userControllerProvider
+                                                          weightControllerProvider
                                                               .notifier)
-                                                      .updateMonitoringPreferences(
-                                                        monitorLdl:
-                                                            tempMonitorLDL,
-                                                        monitorGlucose:
-                                                            tempMonitorGlucose,
-                                                        monitorWeight:
-                                                            tempMonitorWeight,
+                                                      .updateWeight(
+                                                        newWeight,
                                                       ),
                                                   onSuccessCallBack: () {
                                                     ref.invalidate(
-                                                        userControllerProvider);
+                                                        healthFormControllerProvider);
+                                                    Navigator.of(context).pop();
                                                     showToast(
-                                                      status:
-                                                          MessageStatus.success,
                                                       context: context,
                                                       message:
-                                                          'Preferencias actualizadas correctamente',
+                                                          'Peso actualizado correctamente',
+                                                      status:
+                                                          MessageStatus.success,
                                                     );
-                                                    Navigator.pop(context);
                                                   },
                                                 );
-                                              },
-                                            ),
-                                          ],
-                                        );
-                                      },
+                                              }
+                                            }
+                                          },
+                                          text: 'Aceptar',
+                                        ),
+                                      ],
                                     );
                                   },
-                                ),
-                              ],
-                            ),
-                            Visibility(
-                              visible: userProfile.monitorLdl,
-                              child: PviText(
-                                text: '- LDL (Colesterol malo)',
-                                style: AppFonts.body1,
-                              ),
-                            ),
-                            Visibility(
-                              visible: userProfile.monitorGlucose,
-                              child: PviText(
-                                text: '- Glucosa',
-                                style: AppFonts.body1,
-                              ),
-                            ),
-                            Visibility(
-                              visible: userProfile.monitorWeight,
-                              child: PviText(
-                                text: '- Peso (kg)',
-                                style: AppFonts.body1,
-                              ),
-                            ),
-                            Visibility(
-                              visible: !userProfile.monitorLdl &&
-                                  !userProfile.monitorGlucose &&
-                                  !userProfile.monitorWeight,
-                              child: PviText(
-                                text: 'No hay parámetros seleccionados',
-                                style: AppFonts.body1.copyWith(
-                                  color: AppColors.gray5,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
+                                );
+                              },
                             ),
                           ],
                         ),
-                      ),
-                      PviText(
-                        text: 'Configuración de cuenta',
-                        style: AppFonts.headline3,
-                      ),
-                      InkWell(
-                        onTap: () => PersistentNavBarNavigator.pushNewScreen(
-                          context,
-                          screen: const VerifyEmailScreen(),
-                          withNavBar: false,
-                          pageTransitionAnimation: PageTransitionAnimation.fade,
+                        const PviText(
+                          text: 'Altura (m)',
+                          variant: TextVariant.body1,
                         ),
-                        child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.gray4,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              spacing: 8,
-                              children: [
-                                const Icon(
-                                  CommunityMaterialIcons.lock_reset,
-                                  color: AppColors.primary,
-                                  size: 25,
-                                ),
-                                PviText(
-                                    text: 'Cambiar contraseña',
-                                    style: AppFonts.body2),
-                                const Spacer(),
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.gray4,
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                  child: const Icon(
-                                    LucideIcons.chevronRight,
-                                    color: AppColors.gray5,
-                                    size: 20,
-                                  ),
-                                ),
-                              ],
-                            )),
-                      ),
-                      InkWell(
-                        onTap: () => {
-                          ref
-                              .read(fireAuthControllerProvider.notifier)
-                              .signOut(),
-                          Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/login', (route) => false)
-                        },
-                        child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.gray4,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              spacing: 8,
-                              children: [
-                                const Icon(
-                                  LucideIcons.logOut,
-                                  color: AppColors.error,
-                                  size: 20,
-                                ),
-                                PviText(
-                                    text: 'Cerrar sesión',
-                                    style: AppFonts.body2
-                                        .copyWith(color: AppColors.error)),
-                                const Spacer(),
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.gray4,
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                  child: const Icon(
-                                    LucideIcons.chevronRight,
-                                    color: AppColors.gray5,
-                                    size: 20,
-                                  ),
-                                ),
-                              ],
-                            )),
-                      ),
-                    ],
+                        PviText(
+                          text:
+                              '${(userProfile.personalInfo?.height ?? 0) / 100} m',
+                          variant: TextVariant.body1,
+                        ),
+                        const PviText(
+                          text: 'Preexistencias familiares',
+                          variant: TextVariant.body1,
+                        ),
+                        Visibility(
+                          visible: !(userProfile.familyHistory?.diabetes ==
+                                  1) &&
+                              !(userProfile.familyHistory?.hypertension == 1) &&
+                              !(userProfile.familyHistory?.obesity == 1),
+                          child: const PviText(
+                            text: 'Ninguna',
+                            variant: TextVariant.body1,
+                          ),
+                        ),
+                        Visibility(
+                          visible: userProfile.familyHistory?.diabetes == 1,
+                          child: const PviText(
+                            text: '- Diabetes',
+                            variant: TextVariant.body1,
+                          ),
+                        ),
+                        Visibility(
+                          visible: userProfile.familyHistory?.hypertension == 1,
+                          child: const PviText(
+                            text: '- Hipertensión',
+                            variant: TextVariant.body1,
+                          ),
+                        ),
+                        Visibility(
+                          visible: userProfile.familyHistory?.obesity == 1,
+                          child: const PviText(
+                            text: '- Obesidad',
+                            variant: TextVariant.body1,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 32),
+                  const PviText(
+                    text: 'Enfermedades monitoreadas',
+                    variant: TextVariant.headline3,
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.gray4,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const PviText(
+                              text: 'Enfermedades que monitoreas',
+                              variant: TextVariant.body1,
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                LucideIcons.settings,
+                                color: AppColors.primary,
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    bool tempMonitorDiabetes =
+                                        userProfile.monitoring?.diabetes ??
+                                            false;
+                                    bool tempMonitorHypertension =
+                                        userProfile.monitoring?.hypertension ??
+                                            false;
+                                    bool tempMonitorObesity =
+                                        userProfile.monitoring?.obesity ??
+                                            false;
+
+                                    return AlertDialog(
+                                      backgroundColor: AppColors.background,
+                                      title: const PviText(
+                                        text: 'Editar parámetros monitoreados',
+                                        variant: TextVariant.headline2,
+                                      ),
+                                      content: StatefulBuilder(
+                                        builder: (BuildContext context,
+                                            StateSetter setState) {
+                                          return Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              CheckboxListTile(
+                                                title: const PviText(
+                                                  text: 'Diabetes',
+                                                  variant: TextVariant.body1,
+                                                ),
+                                                value: tempMonitorDiabetes,
+                                                onChanged: (bool? value) {
+                                                  setState(() {
+                                                    tempMonitorDiabetes =
+                                                        value ?? false;
+                                                  });
+                                                },
+                                                activeColor: AppColors.primary,
+                                              ),
+                                              CheckboxListTile(
+                                                title: const PviText(
+                                                  text: 'Hipertensión',
+                                                  variant: TextVariant.body1,
+                                                ),
+                                                value: tempMonitorHypertension,
+                                                onChanged: (bool? value) {
+                                                  setState(() {
+                                                    tempMonitorHypertension =
+                                                        value ?? false;
+                                                  });
+                                                },
+                                                activeColor: AppColors.primary,
+                                              ),
+                                              CheckboxListTile(
+                                                title: const PviText(
+                                                  text: 'Obesidad',
+                                                  variant: TextVariant.body1,
+                                                ),
+                                                value: tempMonitorObesity,
+                                                onChanged: (bool? value) {
+                                                  setState(() {
+                                                    tempMonitorObesity =
+                                                        value ?? false;
+                                                  });
+                                                },
+                                                activeColor: AppColors.primary,
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                      actions: [
+                                        PviTextButton(
+                                          textStyle: AppFonts.button1
+                                              .copyWith(color: AppColors.gray5),
+                                          text: 'Cancelar',
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                        ),
+                                        PviTextButton(
+                                          text: 'Guardar',
+                                          onPressed: () {
+                                            StatusHandlerFunction.handleStatus(
+                                              context: context,
+                                              action: ref
+                                                  .read(
+                                                      healthFormControllerProvider
+                                                          .notifier)
+                                                  .updateHealthForm(
+                                                    HealthFormInfo(
+                                                      monitoring: Monitoring(
+                                                        diabetes:
+                                                            tempMonitorDiabetes,
+                                                        hypertension:
+                                                            tempMonitorHypertension,
+                                                        obesity:
+                                                            tempMonitorObesity,
+                                                      ),
+                                                      step: userProfile.step,
+                                                      completed:
+                                                          userProfile.completed,
+                                                    ),
+                                                  ),
+                                              onSuccessCallBack: () {
+                                                ref.invalidate(
+                                                    healthFormControllerProvider);
+                                                Navigator.pop(context);
+                                                showToast(
+                                                  context: context,
+                                                  message:
+                                                      'Enfermedades monitoreadas actualizadas correctamente',
+                                                  status: MessageStatus.success,
+                                                );
+                                              },
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        Visibility(
+                          visible: userProfile.monitoring?.diabetes ?? false,
+                          child: const PviText(
+                            text: '- Diabetes',
+                            variant: TextVariant.body1,
+                          ),
+                        ),
+                        Visibility(
+                          visible:
+                              userProfile.monitoring?.hypertension ?? false,
+                          child: const PviText(
+                            text: '- Hipertensión',
+                            variant: TextVariant.body1,
+                          ),
+                        ),
+                        Visibility(
+                          visible: userProfile.monitoring?.obesity ?? false,
+                          child: const PviText(
+                            text: '- Obesidad',
+                            variant: TextVariant.body1,
+                          ),
+                        ),
+                        Visibility(
+                          visible:
+                              !(userProfile.monitoring?.diabetes ?? false) &&
+                                  !(userProfile.monitoring?.hypertension ??
+                                      false) &&
+                                  !(userProfile.monitoring?.obesity ?? false),
+                          child: const PviText(
+                            text: 'No hay parámetros seleccionados',
+                            variant: TextVariant.body1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  InkWell(
+                    onTap: () async {
+                      try {
+                        await StatusHandlerFunction.handleStatus(
+                          context: context,
+                          action: ref
+                              .read(auth0ControllerProvider.notifier)
+                              .logout(),
+                          onSuccessCallBack: () {
+                            if (context.mounted) {
+                              Navigator.of(context).pushAndRemoveUntil(
+                                PageTransition(
+                                  type: PageTransitionType.rightToLeft,
+                                  duration: const Duration(milliseconds: 300),
+                                  child: const AuthScreen(),
+                                ),
+                                (route) => false,
+                              );
+                            }
+                          },
+                        );
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  'Error al cerrar sesión: ${e.toString()}'),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.gray4,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        spacing: 8,
+                        children: [
+                          const Icon(
+                            LucideIcons.logOut,
+                            color: AppColors.error,
+                            size: 20,
+                          ),
+                          const PviText(
+                            text: 'Cerrar sesión',
+                            variant: TextVariant.body2,
+                            color: AppColors.error,
+                          ),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.gray4,
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            child: const Icon(
+                              LucideIcons.chevronRight,
+                              color: AppColors.gray5,
+                              size: 20,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          );
-        }
-        return const SizedBox();
+          ),
+        );
       },
+      loading: () => const PviLoader(),
+      error: (error, _) =>
+          PviError(customMessage: 'Error al cargar datos: $error'),
     );
   }
 }

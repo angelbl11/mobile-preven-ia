@@ -6,9 +6,13 @@ ENV_FILE?=env.json
 
 
 
-run:
+run-dev:
 	@echo "Running the application"
 	$(FLUTTER) run --dart-define-from-file=$(ENV_DIR)/env.json
+
+run-prod:
+	@echo "Running the application"
+	$(FLUTTER) run --dart-define-from-file=$(ENV_DIR)/env.prod.json
 
 build-debug:
 	@echo "Building Flutter app for debug"

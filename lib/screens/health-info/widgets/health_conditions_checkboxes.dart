@@ -1,8 +1,7 @@
 import 'package:flutter/widgets.dart';
-import 'package:mobile_preven_ia_app/resources/app_colors.dart';
-import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
+import 'package:mobile_preven_ia_app/core/resources/app_colors.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
 import 'package:mobile_preven_ia_app/screens/health-info/widgets/health_checkbox.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
 
 class HealthConditionsCheckboxes extends StatelessWidget {
   final bool hasDiabetes;
@@ -34,14 +33,14 @@ class HealthConditionsCheckboxes extends StatelessWidget {
         spacing: 16,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PviText(
+          const PviText(
             text: 'Condiciones géneticas',
-            style: AppFonts.headline4,
+            variant: TextVariant.headline4,
           ),
-          PviText(
+          const PviText(
             text:
                 '¿Alguien en tu familia tiene alguna de las siguientes condiciones?',
-            style: AppFonts.body1,
+            variant: TextVariant.body1,
           ),
           HealthCheckbox(
             label: 'Diabetes',
