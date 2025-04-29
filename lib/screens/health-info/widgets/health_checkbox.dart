@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_preven_ia_app/resources/app_colors.dart';
-import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
+import 'package:mobile_preven_ia_app/core/resources/app_colors.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
 
 class HealthCheckbox extends StatelessWidget {
   final String label;
@@ -30,7 +29,7 @@ class HealthCheckbox extends StatelessWidget {
         ),
         PviText(
           text: label,
-          style: AppFonts.body1,
+          variant: TextVariant.body1,
         ),
       ],
     );

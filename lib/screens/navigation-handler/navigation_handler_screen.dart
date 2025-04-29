@@ -3,14 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/user/user_controller.dart';
-import 'package:mobile_preven_ia_app/resources/app_colors.dart';
+import 'package:mobile_preven_ia_app/core/domain/controllers/health-files/health_files_controller.dart';
+import 'package:mobile_preven_ia_app/core/domain/controllers/health-form/health_form_controller.dart';
+import 'package:mobile_preven_ia_app/core/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/screens/home/home_screen.dart';
-import 'package:mobile_preven_ia_app/screens/monitoring-history/monitoring_history_screen.dart';
 import 'package:mobile_preven_ia_app/screens/upload-file/upload_file_screen.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/clinical-analysis/clinical_analysis_controller.dart';
-import 'package:mobile_preven_ia_app/gemini/controllers/process_info_controller.dart';
 
 class NavigationHandlerScreen extends ConsumerWidget {
   NavigationHandlerScreen({super.key});
@@ -21,8 +19,10 @@ class NavigationHandlerScreen extends ConsumerWidget {
   List<Widget> _buildScreens() {
     return [
       const HomeScreen(),
-      const UploadFileScreen(),
-      const MonitoringHistoryScreen(),
+      const UploadFileScreen(), // Placeholder for health form screen
+      const Center(
+          child: Text(
+              'Health Files Screen')), // Placeholder for health files screen
     ];
   }
 
@@ -73,9 +73,8 @@ class NavigationHandlerScreen extends ConsumerWidget {
       ),
       navBarStyle: NavBarStyle.style15,
       onItemSelected: (index) {
-        ref.invalidate(clinicalAnalysisControllerProvider);
-        ref.invalidate(userControllerProvider);
-        ref.invalidate(processInfoControllerProvider);
+        ref.invalidate(healthFilesControllerProvider);
+        ref.invalidate(healthFormControllerProvider);
       },
     );
   }

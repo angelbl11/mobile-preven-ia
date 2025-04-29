@@ -9,6 +9,7 @@ class HealthFormField {
   final Function()? onTap;
   final String? Function(String?)? validator;
   final bool isRequired;
+  final Function()? onChanged;
 
   HealthFormField({
     required this.label,
@@ -19,5 +20,6 @@ class HealthFormField {
     this.onTap,
     this.validator,
     this.isRequired = true,
+    this.onChanged,
   });
 }

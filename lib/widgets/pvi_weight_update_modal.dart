@@ -1,15 +1,15 @@
 import 'package:community_material_icon/community_material_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile_preven_ia_app/classes/message_status.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/user/user_controller.dart';
-import 'package:mobile_preven_ia_app/functions/show_toast.dart';
-import 'package:mobile_preven_ia_app/functions/status_handler_function.dart';
-import 'package:mobile_preven_ia_app/resources/app_colors.dart';
-import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_text_button.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_text_input.dart';
+import 'package:mobile_preven_ia_app/core/classes/message_status.dart';
+import 'package:mobile_preven_ia_app/core/domain/controllers/weight/weight_controller.dart';
+import 'package:mobile_preven_ia_app/core/functions/show_toast.dart';
+import 'package:mobile_preven_ia_app/core/functions/status_handler_function.dart';
+import 'package:mobile_preven_ia_app/core/resources/app_colors.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_button.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_form_button.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_text_input.dart';
 
 class PviWeightUpdateModal extends ConsumerWidget {
   final double currentWeight;
@@ -33,7 +33,7 @@ class PviWeightUpdateModal extends ConsumerWidget {
       backgroundColor: AppColors.background,
       title: PviText(
         text: 'Actualizar peso',
-        style: AppFonts.headline2,
+        variant: TextVariant.headline2,
       ),
       content: SizedBox(
         width: 300,
@@ -44,7 +44,7 @@ class PviWeightUpdateModal extends ConsumerWidget {
             children: [
               PviText(
                 text: '¿Deseas actualizar tu peso actual?',
-                style: AppFonts.body1,
+                variant: TextVariant.body1,
               ),
               const SizedBox(height: 16),
               PviTextInput(
@@ -79,15 +79,19 @@ class PviWeightUpdateModal extends ConsumerWidget {
       ),
       actions: [
         if (showSkipButton)
-          PviTextButton(
-            text: 'Mantener peso actual',
-            onPressed: () {
+          PviFormButton(
+            buttonVariant: ButtonVariant.text,
+            buttonColor: AppColors.primary,
+            buttonText: 'Mantener peso actual',
+            onSubmit: () {
               Navigator.of(context).pop();
               onWeightUpdated?.call();
             },
           ),
-        PviTextButton(
-          onPressed: () {
+        PviFormButton(
+          buttonVariant: ButtonVariant.primary,
+          buttonText: 'Actualizar',
+          onSubmit: () {
             if (formKey.currentState!.validate()) {
               final newWeight =
                   double.tryParse(weightController.text.replaceAll(',', '.'));
@@ -95,10 +99,9 @@ class PviWeightUpdateModal extends ConsumerWidget {
                 StatusHandlerFunction.handleStatus(
                   context: context,
                   action: ref
-                      .read(userControllerProvider.notifier)
-                      .updateUserWeight(newWeight),
+                      .read(weightControllerProvider.notifier)
+                      .updateWeight(newWeight),
                   onSuccessCallBack: () {
-                    ref.invalidate(userControllerProvider);
                     showToast(
                       status: MessageStatus.success,
                       context: context,
@@ -111,7 +114,6 @@ class PviWeightUpdateModal extends ConsumerWidget {
               }
             }
           },
-          text: 'Actualizar',
         ),
       ],
     );

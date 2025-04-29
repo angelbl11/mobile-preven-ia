@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/clinical-analysis/clinical_analysis_controller.dart';
-import 'package:mobile_preven_ia_app/firebase/storage/user/user_controller.dart';
-import 'package:mobile_preven_ia_app/resources/app_colors.dart';
-import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
-import 'package:mobile_preven_ia_app/screens/home/widgets/clinical_results.dart';
-import 'package:mobile_preven_ia_app/screens/profile/profile_screen.dart';
-import 'package:mobile_preven_ia_app/utils/get_user_initials.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_error.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_loader.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_scaffold.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
+import 'package:mobile_preven_ia_app/core/domain/controllers/health-files/health_files_controller.dart';
+import 'package:mobile_preven_ia_app/core/domain/controllers/health-form/health_form_controller.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_error.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_form_button.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_loader.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_scaffold.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
+import 'package:mobile_preven_ia_app/screens/upload-file/upload_file_screen.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -22,86 +19,76 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _refreshData() async {
-    ref.invalidate(userControllerProvider);
-    ref.invalidate(clinicalAnalysisControllerProvider);
+    ref.invalidate(healthFormControllerProvider);
+    ref.invalidate(healthFilesControllerProvider);
   }
 
   @override
   Widget build(BuildContext context) {
-    final userProfileAsync = ref.watch(userControllerProvider);
-    final analysesAsync = ref.watch(clinicalAnalysisControllerProvider);
+    final healthFormAsync = ref.watch(healthFormControllerProvider);
+    final healthFilesAsync = ref.watch(healthFilesControllerProvider);
 
-    return userProfileAsync.when(
+    return healthFormAsync.when(
       loading: () => const PviLoader(),
       error: (error, stack) => PviError(
         customMessage: 'Error al cargar datos: $error',
       ),
-      data: (userProfile) {
-        return analysesAsync.when(
+      data: (healthInfo) {
+        return healthFilesAsync.when(
           loading: () => const PviLoader(),
           error: (error, stack) => PviError(
             customMessage: 'Error al cargar análisis: $error',
           ),
-          data: (analyses) {
-            final filteredAnalyses =
-                analyses.length > 3 ? analyses.sublist(0, 3) : analyses;
+          data: (healthFiles) {
+            final filteredHealthFiles = healthFiles.length > 3
+                ? healthFiles.sublist(0, 3)
+                : healthFiles;
 
             return PviScaffold(
               screenContent: Column(
                 spacing: 22,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(height: 24),
                   Row(
                     spacing: 16,
                     children: [
-                      InkWell(
-                        onTap: () => PersistentNavBarNavigator.pushNewScreen(
-                          context,
-                          screen: const ProfileScreen(),
-                          withNavBar: false,
-                          pageTransitionAnimation: PageTransitionAnimation.fade,
-                        ),
-                        child: CircleAvatar(
-                          radius: 30,
-                          backgroundColor: AppColors.secondary,
-                          backgroundImage: userProfile?.photoUrl != '' &&
-                                  userProfile?.photoUrl != null
-                              ? NetworkImage(userProfile?.photoUrl ?? '')
-                              : null,
-                          child: userProfile?.photoUrl == null ||
-                                  userProfile?.photoUrl == ''
-                              ? Center(
-                                  child: Text(
-                                    getUserInitials(userProfile!),
-                                    style: AppFonts.headline3
-                                        .copyWith(color: Colors.white),
-                                  ),
-                                )
-                              : null,
-                        ),
-                      ),
                       PviText(
-                        text: '¡Hola, ${userProfile?.name}!',
-                        style: AppFonts.headline2,
+                        text: '¡Hola, ${healthInfo.name}!',
+                        variant: TextVariant.headline2,
                       ),
                     ],
                   ),
                   Visibility(
-                    visible: filteredAnalyses.isNotEmpty,
-                    child: PviText(
+                    visible: filteredHealthFiles.isNotEmpty,
+                    child: const PviText(
                       text: 'Estos son tus últimos resultados',
-                      style: AppFonts.headline3,
+                      variant: TextVariant.headline3,
                     ),
                   ),
-                  if (filteredAnalyses.isNotEmpty)
-                    ...filteredAnalyses
-                        .map((analysis) => ClinicalResults(analysis: analysis)),
-                  if (filteredAnalyses.isEmpty)
-                    PviText(
-                      textAlign: TextAlign.center,
-                      text:
-                          'No tienes análisis clínicos por el momento, sube tus estudios para obtener resultados',
-                      style: AppFonts.body3,
+                  if (filteredHealthFiles.isEmpty)
+                    Column(
+                      spacing: 24,
+                      children: [
+                        const PviText(
+                          textAlign: TextAlign.center,
+                          text:
+                              'No tienes análisis clínicos por el momento, sube tus estudios para obtener resultados',
+                          variant: TextVariant.body3,
+                        ),
+                        PviFormButton(
+                          onSubmit: () {
+                            PersistentNavBarNavigator.pushNewScreen(
+                              context,
+                              screen: const UploadFileScreen(),
+                              withNavBar: true,
+                              pageTransitionAnimation:
+                                  PageTransitionAnimation.fade,
+                            );
+                          },
+                          buttonText: 'Subir ahora',
+                        )
+                      ],
                     ),
                 ],
               ),

@@ -1,24 +1,23 @@
 import 'package:flutter/widgets.dart';
-import 'package:mobile_preven_ia_app/resources/app_colors.dart';
-import 'package:mobile_preven_ia_app/resources/app_fonts.dart';
+import 'package:mobile_preven_ia_app/core/resources/app_colors.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
 import 'package:mobile_preven_ia_app/screens/health-info/widgets/health_checkbox.dart';
-import 'package:mobile_preven_ia_app/widgets/pvi_text.dart';
 
 class HealthMonitoringCheckboxes extends StatelessWidget {
-  final bool monitorLDL;
-  final bool monitorGlucose;
-  final bool monitorWeight;
-  final Function(bool) onLDLChanged;
-  final Function(bool) onGlucoseChanged;
-  final Function(bool) onWeightChanged;
+  final bool monitorDiabetes;
+  final bool monitorHypertension;
+  final bool monitorObesity;
+  final Function(bool) onDiabetesChanged;
+  final Function(bool) onHypertensionChanged;
+  final Function(bool) onObesityChanged;
   const HealthMonitoringCheckboxes(
       {super.key,
-      required this.monitorLDL,
-      required this.monitorGlucose,
-      required this.monitorWeight,
-      required this.onLDLChanged,
-      required this.onGlucoseChanged,
-      required this.onWeightChanged});
+      required this.monitorDiabetes,
+      required this.monitorHypertension,
+      required this.monitorObesity,
+      required this.onDiabetesChanged,
+      required this.onHypertensionChanged,
+      required this.onObesityChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -32,28 +31,28 @@ class HealthMonitoringCheckboxes extends StatelessWidget {
         spacing: 16,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PviText(
-            text: 'Parámetros de salud',
-            style: AppFonts.headline4,
+          const PviText(
+            text: 'Enfermedades monitorizadas',
+            variant: TextVariant.headline4,
           ),
-          PviText(
-            text: 'Elige los parámetros de salud más relevantes para ti',
-            style: AppFonts.body1,
-          ),
-          HealthCheckbox(
-            label: 'LDL (Colesterol malo)',
-            value: monitorLDL,
-            onChanged: (value) => onLDLChanged(value ?? false),
+          const PviText(
+            text: 'Elige las enfermedades que quieres monitorizar',
+            variant: TextVariant.body1,
           ),
           HealthCheckbox(
-            label: 'Glucosa',
-            value: monitorGlucose,
-            onChanged: (value) => onGlucoseChanged(value ?? false),
+            label: 'Diabetes',
+            value: monitorDiabetes,
+            onChanged: (value) => onDiabetesChanged(value ?? false),
           ),
           HealthCheckbox(
-            label: 'Peso (kg)',
-            value: monitorWeight,
-            onChanged: (value) => onWeightChanged(value ?? false),
+            label: 'Hipertensión',
+            value: monitorHypertension,
+            onChanged: (value) => onHypertensionChanged(value ?? false),
+          ),
+          HealthCheckbox(
+            label: 'Obesidad',
+            value: monitorObesity,
+            onChanged: (value) => onObesityChanged(value ?? false),
           ),
         ],
       ),
