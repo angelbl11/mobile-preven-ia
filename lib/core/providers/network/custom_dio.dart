@@ -11,8 +11,8 @@ class CustomDio {
   }) : _dio = Dio(
           BaseOptions(
             baseUrl: EnvironmentKeys.apiUrl,
-            connectTimeout: const Duration(milliseconds: 8000),
-            receiveTimeout: const Duration(milliseconds: 25000),
+            connectTimeout: const Duration(seconds: 15),
+            receiveTimeout: const Duration(seconds: 50),
           ),
         ) {
     // Add interceptors if provided
