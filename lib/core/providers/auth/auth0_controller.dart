@@ -59,7 +59,9 @@ class Auth0Controller extends _$Auth0Controller {
     try {
       state = state.copyWith(isLoading: true);
 
-      final credentials = await state.auth0.webAuthentication().login(
+      final credentials = await state.auth0
+          .webAuthentication(scheme: 'com.mobile.preven.ia.app')
+          .login(
         scopes: {'openid', 'profile', 'email', 'offline_access'},
         parameters: {
           'screen_hint': 'login',
@@ -95,7 +97,9 @@ class Auth0Controller extends _$Auth0Controller {
     try {
       state = state.copyWith(isLoading: true);
 
-      final credentials = await state.auth0.webAuthentication().login(
+      final credentials = await state.auth0
+          .webAuthentication(scheme: 'com.mobile.preven.ia.app')
+          .login(
         scopes: {'openid', 'profile', 'email', 'offline_access'},
         parameters: {
           'screen_hint': 'signup',
@@ -137,9 +141,12 @@ class Auth0Controller extends _$Auth0Controller {
     try {
       state = state.copyWith(isLoading: true);
 
-      developer.log('Logging out, clearing credentials...');
       // Clear credentials from secure storage
       await state.auth0.credentialsManager.clearCredentials();
+
+      await state.auth0
+          .webAuthentication(scheme: 'com.mobile.preven.ia.app')
+          .logout();
 
       // Clear the HTTP client token
       ref.read(customDioControllerProvider).updateToken('');
