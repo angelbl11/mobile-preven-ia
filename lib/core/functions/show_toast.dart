@@ -1,0 +1,49 @@
+import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:mobile_preven_ia_app/core/classes/message_status.dart';
+import 'package:mobile_preven_ia_app/core/widgets/pvi_text.dart';
+import 'package:toastification/toastification.dart';
+
+/// Show a toast with the message
+void showToast({
+  required MessageStatus status,
+  required BuildContext context,
+  required String message,
+  bool isRequiredTitle = false,
+  String? customTitle,
+}) {
+  toastification.show(
+    icon: Icon(
+      size: 25,
+      status.type == ToastificationType.error
+          ? LucideIcons.circleX
+          : status.type == ToastificationType.success
+              ? LucideIcons.circleCheck
+              : LucideIcons.info,
+      color: status.primaryColor,
+    ),
+    context: context,
+    style: ToastificationStyle.minimal,
+    autoCloseDuration: const Duration(seconds: 5),
+    type: status.type,
+    alignment: Alignment.bottomLeft,
+    title: isRequiredTitle
+        ? PviText(
+            text: customTitle ?? status.title,
+            variant: TextVariant.body2,
+          )
+        : null,
+    description: PviText(
+      text: message,
+      variant: TextVariant.body2,
+    ),
+    primaryColor: status.primaryColor,
+    animationDuration: const Duration(milliseconds: 300),
+    borderRadius: BorderRadius.circular(10),
+    showProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    dragToClose: true,
+    applyBlurEffect: true,
+  );
+}
