@@ -7,6 +7,7 @@ import 'package:mobile_preven_ia_app/core/classes/message_status.dart';
 import 'package:mobile_preven_ia_app/core/domain/controllers/health-form/health_form_controller.dart';
 import 'package:mobile_preven_ia_app/core/domain/controllers/weight/weight_controller.dart';
 import 'package:mobile_preven_ia_app/core/domain/models/health_form_info.dart';
+import 'package:mobile_preven_ia_app/core/extensions/get_name_initials_extension.dart';
 import 'package:mobile_preven_ia_app/core/functions/show_toast.dart';
 import 'package:mobile_preven_ia_app/core/functions/status_handler_function.dart';
 import 'package:mobile_preven_ia_app/core/providers/auth/auth0_controller.dart';
@@ -23,13 +24,6 @@ import 'package:page_transition/page_transition.dart';
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
-  String _getUserInitials(String name) {
-    if (name.isEmpty) return '';
-    final parts = name.split(' ');
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-    return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final healthForm = ref.watch(healthFormControllerProvider);
@@ -39,6 +33,8 @@ class ProfileScreen extends ConsumerWidget {
       data: (healthFormInfo) {
         final userProfile = healthFormInfo;
         final userEmail = auth0State.credentials?.user.email ?? '';
+        final userInfoAsync = ref.watch(
+            auth0ControllerProvider.select((value) => value.credentials?.user));
 
         return Scaffold(
           extendBody: true,
@@ -56,15 +52,18 @@ class ProfileScreen extends ConsumerWidget {
                   Align(
                     alignment: Alignment.center,
                     child: CircleAvatar(
-                      radius: 50,
-                      backgroundColor: AppColors.secondary,
-                      child: Center(
-                        child: Text(
-                          _getUserInitials(userProfile.name ?? ''),
-                          style:
-                              AppFonts.headline3.copyWith(color: Colors.white),
-                        ),
-                      ),
+                      radius: 40,
+                      backgroundImage: userInfoAsync?.pictureUrl != null
+                          ? NetworkImage(userInfoAsync!.pictureUrl.toString())
+                          : null,
+                      backgroundColor: AppColors.primary,
+                      child: userInfoAsync?.pictureUrl == null
+                          ? PviText(
+                              text: userProfile.name?.getInitials() ?? '',
+                              variant: TextVariant.headline2,
+                              color: AppColors.background,
+                            )
+                          : null,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -101,7 +100,7 @@ class ProfileScreen extends ConsumerWidget {
                       children: [
                         const PviText(
                           text: 'Nombre completo',
-                          variant: TextVariant.body1,
+                          variant: TextVariant.body2,
                         ),
                         PviText(
                           text: userProfile.name ?? '',
@@ -109,7 +108,7 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         const PviText(
                           text: 'Fecha de nacimiento',
-                          variant: TextVariant.body1,
+                          variant: TextVariant.body2,
                         ),
                         PviText(
                           text: DateFormat('dd/MM/yyyy').format(
@@ -137,7 +136,7 @@ class ProfileScreen extends ConsumerWidget {
                       children: [
                         const PviText(
                           text: 'Peso (kg)',
-                          variant: TextVariant.body1,
+                          variant: TextVariant.body2,
                         ),
                         Row(
                           children: [
@@ -251,16 +250,18 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         const PviText(
                           text: 'Altura (m)',
-                          variant: TextVariant.body1,
+                          variant: TextVariant.body2,
                         ),
+                        const SizedBox(height: 6),
                         PviText(
                           text:
                               '${(userProfile.personalInfo?.height ?? 0) / 100} m',
                           variant: TextVariant.body1,
                         ),
+                        const SizedBox(height: 6),
                         const PviText(
                           text: 'Preexistencias familiares',
-                          variant: TextVariant.body1,
+                          variant: TextVariant.body2,
                         ),
                         Visibility(
                           visible: !(userProfile.familyHistory?.diabetes ==
@@ -317,7 +318,7 @@ class ProfileScreen extends ConsumerWidget {
                           children: [
                             const PviText(
                               text: 'Enfermedades que monitoreas',
-                              variant: TextVariant.body1,
+                              variant: TextVariant.body2,
                             ),
                             IconButton(
                               icon: const Icon(

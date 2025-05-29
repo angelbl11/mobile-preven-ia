@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "395443177311",
+    "project_id": "preven-ia-11969",
+    "storage_bucket": "preven-ia-11969.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:395443177311:android:453960c32870df155718ea",
+        "android_client_info": {
+          "package_name": "com.mobile.preven.ia.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBYFr0dEYhwfucuu3f4cFNtff6wVjhSb8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

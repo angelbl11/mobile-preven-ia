@@ -35,7 +35,6 @@ class ClinicalResults extends ConsumerWidget {
         spacing: 16,
         children: [
           Row(
-            spacing: 8,
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
@@ -49,6 +48,7 @@ class ClinicalResults extends ConsumerWidget {
                   color: AppColors.primary,
                 ),
               ),
+              const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 2,
@@ -58,7 +58,7 @@ class ClinicalResults extends ConsumerWidget {
                   PviText(text: date, variant: TextVariant.body1),
                 ],
               ),
-              const Spacer(),
+              const SizedBox(width: 12),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -76,7 +76,7 @@ class ClinicalResults extends ConsumerWidget {
                   color: AppColors.background,
                 ),
               ),
-              const SizedBox(width: 8),
+              const Spacer(),
               if (prediction.geminiAnalysis.analysis != null)
                 InkWell(
                   onTap: () async {
