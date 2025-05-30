@@ -2,7 +2,7 @@
 FLUTTER?=flutter
 ENV_DIR?=environments
 DART?=dart
-ENV_FILE?=env.json
+ENV_FILE?=env.prod.json
 
 
 
@@ -16,12 +16,12 @@ run-prod:
 
 build-debug:
 	@echo "Building Flutter app for debug"
-	$(FLUTTER) build apk --dart-define-from-file=$(ENV_DIR)/$(ENV_FILE) --debug
+	$(FLUTTER) build apk --dart-define-from-file=$(ENV_DIR)/$(ENV_FILE) --debug --no-tree-shake-icons
 
 
 build-release:
 	@echo "Building Flutter app for release"
-	$(FLUTTER) build apk --dart-define-from-file=$(ENV_DIR)/$(ENV_FILE) --release
+	$(FLUTTER) build apk --dart-define-from-file=$(ENV_DIR)/$(ENV_FILE) --release --no-tree-shake-icons
 
 
 
