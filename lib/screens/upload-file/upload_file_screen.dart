@@ -6,9 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mobile_preven_ia_app/core/classes/message_status.dart';
-import 'package:mobile_preven_ia_app/core/domain/controllers/health-files/health_files_controller.dart';
 import 'package:mobile_preven_ia_app/core/functions/show_toast.dart';
-import 'package:mobile_preven_ia_app/core/functions/status_handler_function.dart';
 import 'package:mobile_preven_ia_app/core/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_button.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_form_button.dart';
@@ -26,14 +24,14 @@ class UploadFileScreen extends ConsumerStatefulWidget {
 }
 
 class _UploadFileScreenState extends ConsumerState<UploadFileScreen> {
-  void _proceedToManualParametersScreen(String documentId) {
+  void _proceedToManualParametersScreen(File file) {
     PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
       context,
       screen: const ManualParametersScreen(),
       withNavBar: false,
       pageTransitionAnimation: PageTransitionAnimation.fade,
       settings: RouteSettings(arguments: {
-        'documentId': documentId,
+        'fileToUpload': file,
       }),
     );
   }
@@ -103,21 +101,24 @@ class _UploadFileScreenState extends ConsumerState<UploadFileScreen> {
   }
 
   Future<void> handleUploadFile(File file) async {
-    var documentId = '';
-    StatusHandlerFunction.handleStatus(
-      context: context,
-      action: () async {
-        final response = await ref
-            .read(healthFilesControllerProvider.notifier)
-            .uploadHealthFile(file);
-        documentId = response.documentId;
-        return response;
-      }(),
-      onSuccessCallBack: () {
-        Navigator.pop(context);
-        _proceedToManualParametersScreen(documentId);
-      },
-    );
+    try {
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context); // Close the dialog
+      }
+      await Future.delayed(
+          const Duration(milliseconds: 100)); // Give time for dialog to close
+      if (mounted) {
+        _proceedToManualParametersScreen(file);
+      }
+    } catch (e) {
+      if (mounted) {
+        showToast(
+          status: MessageStatus.error,
+          context: context,
+          message: 'Error al procesar el archivo: ${e.toString()}',
+        );
+      }
+    }
   }
 
   Future<void> _pickPdf() async {

@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:mobile_preven_ia_app/core/domain/controllers/health-files/health_files_controller.dart';
 import 'package:mobile_preven_ia_app/core/resources/app_colors.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_button.dart';
 import 'package:mobile_preven_ia_app/core/widgets/pvi_form_button.dart';
@@ -137,7 +140,7 @@ class _ManualParametersScreenState
     });
   }
 
-  void _submitParameters(String documentId) {
+  Future<void> _submitParameters(File file) async {
     setState(() {
       _hasSubmitted = true;
     });
@@ -146,38 +149,67 @@ class _ManualParametersScreenState
       return;
     }
 
-    // Update weight if shown and valid
-    if (_showWeightField && _weightController.text.isNotEmpty) {
-      final newWeight =
-          double.tryParse(_weightController.text.replaceAll(',', '.'));
-      if (newWeight != null) {
-        StatusHandlerFunction.handleStatus(
-          context: context,
-          action: ref
-              .read(weightControllerProvider.notifier)
-              .updateWeight(newWeight),
-          onSuccessCallBack: () {
-            showToast(
-              status: MessageStatus.success,
-              context: context,
-              message: 'Peso actualizado correctamente',
-            );
-          },
+    try {
+      // First operation: Update weight if needed
+      if (_showWeightField && _weightController.text.isNotEmpty) {
+        final newWeight =
+            double.tryParse(_weightController.text.replaceAll(',', '.'));
+        if (newWeight != null) {
+          await StatusHandlerFunction.handleStatus(
+            context: context,
+            action: ref
+                .read(weightControllerProvider.notifier)
+                .updateWeight(newWeight),
+            onSuccessCallBack: () {
+              if (!mounted) return;
+              showToast(
+                status: MessageStatus.success,
+                context: context,
+                message: 'Peso actualizado correctamente',
+              );
+            },
+          );
+        }
+      }
+
+      // Second operation: Upload file
+      dynamic response;
+      await StatusHandlerFunction.handleStatus(
+        context: context,
+        action: () async {
+          response = await ref
+              .read(healthFilesControllerProvider.notifier)
+              .uploadHealthFile(file);
+          return response;
+        }(),
+        onSuccessCallBack: () {
+          if (!mounted) return;
+          Navigator.pop(context);
+        },
+      );
+
+      // Third operation: Navigate to processing screen only after successful upload
+      if (response != null && mounted) {
+        PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
+          context,
+          screen: const ProcessingFileScreen(),
+          withNavBar: false,
+          pageTransitionAnimation: PageTransitionAnimation.fade,
+          settings: RouteSettings(arguments: {
+            'documentId': response.documentId,
+            'systolic': _systolicController.text,
+            'diastolic': _diastolicController.text,
+          }),
         );
       }
+    } catch (e) {
+      if (!mounted) return;
+      showToast(
+        status: MessageStatus.error,
+        context: context,
+        message: 'Error al procesar los parámetros: ${e.toString()}',
+      );
     }
-
-    PersistentNavBarNavigator.pushNewScreenWithRouteSettings(
-      context,
-      screen: const ProcessingFileScreen(),
-      withNavBar: false,
-      pageTransitionAnimation: PageTransitionAnimation.fade,
-      settings: RouteSettings(arguments: {
-        'documentId': documentId,
-        'systolic': _systolicController.text,
-        'diastolic': _diastolicController.text,
-      }),
-    );
   }
 
   Widget _buildBloodPressureTooltip() {
@@ -234,7 +266,7 @@ class _ManualParametersScreenState
     final args =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
             {};
-    final documentId = args['documentId'] as String?;
+    final file = args['fileToUpload'] as File?;
     return Scaffold(
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 32),
@@ -311,7 +343,7 @@ class _ManualParametersScreenState
                 buttonVariant: ButtonVariant.primary,
                 buttonText: 'Continuar',
                 onSubmit: _isFormValid
-                    ? () => _submitParameters(documentId ?? '')
+                    ? () => _submitParameters(file ?? File(''))
                     : null,
               ),
             ),
@@ -323,7 +355,7 @@ class _ManualParametersScreenState
                 buttonVariant: ButtonVariant.text,
                 buttonColor: AppColors.primary,
                 buttonText: 'Cancelar',
-                onSubmit: () => PersistentNavBarNavigator.pop(context),
+                onSubmit: () => Navigator.pop(context),
               ),
             ),
           ],

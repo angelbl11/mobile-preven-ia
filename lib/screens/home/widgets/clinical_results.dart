@@ -25,6 +25,13 @@ class ClinicalResults extends ConsumerWidget {
         prediction.geminiAnalysis.analysis?.diagnosis.globalStatus;
     final date = prediction.uploadDate.toIso8601String().toFormattedDateTime();
 
+    // Si el estado no es válido, no mostramos el widget
+    if (stateGeneral != AnalysisStatus.critical &&
+        stateGeneral != AnalysisStatus.observation &&
+        stateGeneral != AnalysisStatus.acceptable) {
+      return const SizedBox.shrink();
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -71,7 +78,7 @@ class ClinicalResults extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: PviText(
-                  text: stateGeneral?.displayName ?? 'PENDING',
+                  text: stateGeneral?.displayName ?? '',
                   variant: TextVariant.body2,
                   color: AppColors.background,
                 ),

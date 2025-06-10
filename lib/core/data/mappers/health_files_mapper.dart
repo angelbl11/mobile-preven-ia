@@ -1,5 +1,6 @@
 import 'package:mobile_preven_ia_app/core/domain/models/health_file.dart';
 import 'package:mobile_preven_ia_app/core/domain/models/health_prediction.dart';
+import 'package:mobile_preven_ia_app/core/domain/models/analysis_status.dart';
 import 'dart:convert';
 
 /// Mapper for health files
@@ -44,7 +45,13 @@ class HealthFilesMapper {
               geminiAnalysis: _parseGeminiAnalysis(file['geminiAnalysis']),
               documentId: file['documentId'] as String,
             ))
-        .toList();
+        .where((file) {
+      final state = file.geminiAnalysis.analysis?.diagnosis.globalStatus;
+      return state != null &&
+          (state == AnalysisStatus.critical ||
+              state == AnalysisStatus.observation ||
+              state == AnalysisStatus.acceptable);
+    }).toList();
   }
 
   static HealthFile _mapHealthFile(Map<String, dynamic> file) {
