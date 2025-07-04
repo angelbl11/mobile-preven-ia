@@ -52,4 +52,4 @@ app.*.map.json
 *.jks
 
 # Environments and secrets
-/environments
+environments/
