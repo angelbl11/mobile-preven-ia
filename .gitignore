@@ -50,3 +50,6 @@ app.*.map.json
 # Android signing keys
 /android/key.properties
 *.jks
+
+# Environments and secrets
+/environments
